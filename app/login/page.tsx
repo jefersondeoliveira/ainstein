@@ -6,7 +6,10 @@ export default function LoginPage({
 }: {
   searchParams: { callbackUrl?: string }
 }) {
-  const callbackUrl = searchParams.callbackUrl ?? '/'
+  const rawCallback = searchParams.callbackUrl ?? ''
+  const callbackUrl = rawCallback.startsWith('/') && !rawCallback.startsWith('//')
+    ? rawCallback
+    : '/'
 
   return (
     <main className="min-h-screen bg-base flex items-center justify-center p-4">
