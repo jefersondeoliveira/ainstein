@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  background: #0a120a;
+  font-family: 'Georgia', serif;
+  color: #f5f0e0;
+  padding: 24px;
+}
+h2 { font-size: 20px; color: #a8d5a2; margin-bottom: 4px; }
+.subtitle { color: #6a8a60; font-size: 13px; margin-bottom: 28px; }
+
+.screens { display: flex; flex-direction: column; gap: 36px; }
+.screen-label {
+  font-size: 11px; text-transform: uppercase; letter-spacing: 2px;
+  color: #a8d5a2; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;
+}
+.screen-label::after { content:''; flex:1; height:1px; background:rgba(168,213,162,0.2); }
+
+/* ─── SHARED CHROME ─── */
+.browser-chrome {
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(168,213,162,0.15);
+  box-shadow: 0 8px 40px rgba(0,0,0,0.6);
+}
+.browser-bar {
+  background: #111d11;
+  padding: 8px 14px;
+  display: flex; align-items: center; gap: 8px;
+  border-bottom: 1px solid rgba(168,213,162,0.1);
+}
+.dot { width:9px; height:9px; border-radius:50%; }
+.url-bar {
+  flex:1; background:rgba(255,255,255,0.05); border-radius:6px;
+  padding:3px 10px; font-size:11px; color:#6a8a60; font-family:monospace;
+}
+
+/* ─── GLOBAL NAV ─── */
+.nav {
+  background: #111d11;
+  padding: 0 24px;
+  height: 52px;
+  display: flex; align-items: center; gap: 24px;
+  border-bottom: 1px solid rgba(168,213,162,0.12);
+}
+.nav-logo {
+  font-size: 18px; font-weight: bold; color: #a8d5a2;
+  letter-spacing: 1px;
+}
+.nav-logo span { color: #f5f0e0; }
+.nav-links { display:flex; gap:20px; flex:1; }
+.nav-link { font-size:13px; color:#8aaa80; }
+.nav-link.active { color:#a8d5a2; border-bottom:2px solid #a8d5a2; padding-bottom:2px; }
+.nav-cta {
+  background: #a8d5a2; color: #0a120a; border-radius: 8px;
+  padding: 7px 16px; font-size: 13px; font-weight: bold;
+}
+
+/* ─── HOME ─── */
+.home-body {
+  background: #0f1a0f;
+  padding: 28px 24px;
+  position: relative; overflow: hidden;
+}
+.chalk-bg {
+  position:absolute; inset:0; pointer-events:none;
+  opacity: 0.04;
+  background-image: repeating-linear-gradient(0deg, #fff 0, #fff 1px, transparent 1px, transparent 36px);
+}
+.chalk-formula {
+  position:absolute; font-family:serif; color:rgba(168,213,162,0.12);
+  font-size:15px; font-style:italic;
+}
+.home-hero {
+  text-align: center; padding: 20px 0 28px;
+}
+.home-hero h1 { font-size: 26px; color: #f5f0e0; margin-bottom: 8px; }
+.home-hero p { color: #8aaa80; font-size: 14px; margin-bottom: 20px; }
+.generate-bar {
+  display: flex; gap: 10px; justify-content: center; align-items: center; flex-wrap: wrap;
+}
+.gen-input {
+  background: rgba(255,255,255,0.06); border: 1px solid rgba(168,213,162,0.25);
+  border-radius: 8px; padding: 10px 16px; color: #f5f0e0; font-size: 14px;
+  width: 260px;
+}
+.level-pills { display:flex; gap:6px; }
+.pill {
+  border: 1px solid rgba(168,213,162,0.3); border-radius:20px;
+  padding:6px 14px; font-size:12px; color:#8aaa80; cursor:pointer;
+}
+.pill.active { background:#a8d5a2; color:#0a120a; border-color:#a8d5a2; font-weight:bold; }
+.gen-btn {
+  background: #a8d5a2; color: #0a120a;
+  border-radius: 8px; padding: 10px 20px; font-size: 14px; font-weight: bold;
+}
+
+.section-title {
+  font-size: 13px; color: #6a8a60; text-transform: uppercase;
+  letter-spacing: 2px; margin: 4px 0 14px;
+}
+.courses-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px;
+}
+.course-card {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(168,213,162,0.1);
+  border-radius: 10px; padding: 16px;
+  transition: border-color 0.2s;
+}
+.course-card:hover { border-color: rgba(168,213,162,0.3); }
+.course-level {
+  display:inline-block; font-size:10px; text-transform:uppercase;
+  letter-spacing:1px; padding:3px 8px; border-radius:4px; margin-bottom:8px;
+}
+.level-i { background:rgba(168,213,162,0.15); color:#a8d5a2; }
+.level-m { background:rgba(240,190,80,0.15); color:#f0be50; }
+.level-a { background:rgba(240,100,80,0.15); color:#f06450; }
+.course-title { font-size:15px; font-weight:bold; color:#f5f0e0; margin-bottom:6px; }
+.course-meta { font-size:12px; color:#6a8a60; display:flex; gap:10px; }
+.course-creator { display:flex; align-items:center; gap:6px; margin-top:10px; }
+.avatar { width:22px; height:22px; border-radius:50%; background:#2a4a2a; display:flex; align-items:center; justify-content:center; font-size:10px; color:#a8d5a2; }
+.creator-name { font-size:12px; color:#8aaa80; }
+
+/* ─── LESSON VIEW ─── */
+.lesson-body {
+  background: #0f1a0f;
+  display: flex; flex-direction: column; height: 500px;
+}
+.lesson-progress-bar {
+  height: 3px; background: rgba(168,213,162,0.1);
+}
+.lesson-progress-fill {
+  height: 100%; width: 45%; background: #a8d5a2;
+  border-radius: 0 2px 2px 0;
+}
+.lesson-main {
+  display: flex; flex: 1; overflow: hidden;
+}
+/* Einstein panel */
+.einstein-panel {
+  width: 200px; min-width: 200px;
+  background: #111d11;
+  border-right: 1px solid rgba(168,213,162,0.1);
+  display: flex; flex-direction: column; align-items: center;
+  padding: 20px 12px; gap: 12px;
+  position: relative;
+}
+.einstein-name { font-size:12px; color:#6a8a60; letter-spacing:1px; }
+.einstein-state {
+  font-size:11px; color:#a8d5a2;
+  background: rgba(168,213,162,0.08); border-radius:20px;
+  padding:3px 10px;
+}
+/* Content panel */
+.content-panel {
+  flex:1; padding:24px 28px; overflow-y:auto;
+  display: flex; flex-direction: column; gap: 16px;
+}
+.lesson-title { font-size:20px; color:#f5f0e0; font-weight:bold; }
+.lesson-text {
+  font-size:14px; color:#c8c0a8; line-height:1.75;
+}
+.lesson-text .cursor {
+  display:inline-block; width:2px; height:14px;
+  background:#a8d5a2; vertical-align:middle;
+  animation: blink-cursor 0.8s step-end infinite;
+}
+@keyframes blink-cursor { 0%,100%{opacity:1} 50%{opacity:0} }
+.code-block {
+  background: #0a120a; border-radius:8px;
+  border: 1px solid rgba(168,213,162,0.12);
+  padding: 14px 16px; font-family: monospace; font-size:13px;
+  color:#c8f0b8; line-height:1.6;
+}
+.code-comment { color:#4a8a40; }
+.code-keyword { color:#f0be50; }
+.code-string { color:#f09060; }
+
+/* Lesson nav bottom */
+.lesson-nav {
+  padding: 12px 20px;
+  border-top: 1px solid rgba(168,213,162,0.08);
+  display:flex; align-items:center; gap:12px;
+  background:#0d180d;
+}
+.btn-prev { font-size:13px; color:#6a8a60; }
+.btn-complete {
+  flex:1; text-align:center;
+  background:rgba(168,213,162,0.1); border:1px solid rgba(168,213,162,0.3);
+  border-radius:8px; padding:8px; font-size:13px; color:#a8d5a2;
+}
+.btn-next {
+  background:#a8d5a2; color:#0a120a; border-radius:8px;
+  padding:8px 18px; font-size:13px; font-weight:bold;
+}
+
+/* Lesson sidebar */
+.lessons-sidebar {
+  width:220px; min-width:220px;
+  background:#0d180d;
+  border-left:1px solid rgba(168,213,162,0.08);
+  padding:16px 12px; overflow-y:auto;
+}
+.sidebar-title { font-size:11px; color:#4a6a40; text-transform:uppercase; letter-spacing:1px; margin-bottom:12px; }
+.lesson-item {
+  display:flex; align-items:center; gap:8px;
+  padding:8px 10px; border-radius:8px; margin-bottom:4px;
+  font-size:13px; color:#8aaa80; cursor:pointer;
+}
+.lesson-item.active { background:rgba(168,213,162,0.1); color:#f5f0e0; }
+.lesson-item.done { color:#6a8a60; }
+.lesson-dot {
+  width:16px; height:16px; border-radius:50%; flex-shrink:0;
+  border:1px solid rgba(168,213,162,0.3);
+  display:flex; align-items:center; justify-content:center; font-size:9px;
+}
+.lesson-dot.done-dot { background:#a8d5a2; color:#0a120a; border-color:#a8d5a2; }
+.lesson-dot.active-dot { border-color:#a8d5a2; background:rgba(168,213,162,0.15); }
+</style>
+</head>
+<body>
+
+<h2>AI.nstein — Mockup das Telas</h2>
+<p class="subtitle">Identidade visual Academia Quente. Role para ver todas as telas.</p>
+
+<div class="screens">
+
+  <!-- ══ TELA 1: HOME ══ -->
+  <div>
+    <div class="screen-label">Tela 1 — Home (Feed de cursos)</div>
+    <div class="browser-chrome">
+      <div class="browser-bar">
+        <div class="dot" style="background:#ff5f57"></div>
+        <div class="dot" style="background:#ffbd2e"></div>
+        <div class="dot" style="background:#28c840"></div>
+        <div class="url-bar">ainstein.vercel.app</div>
+      </div>
+      <div class="nav">
+        <div class="nav-logo">AI<span>.nstein</span></div>
+        <div class="nav-links">
+          <div class="nav-link active">Explorar</div>
+          <div class="nav-link">Meus cursos</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div class="avatar" style="width:30px;height:30px;font-size:13px;">J</div>
+          <div class="nav-cta">+ Gerar curso</div>
+        </div>
+      </div>
+      <div class="home-body">
+        <div class="chalk-bg"></div>
+        <div class="chalk-formula" style="top:40px;left:30px;">∑ = ∫ ∞</div>
+        <div class="chalk-formula" style="top:80px;right:60px;">E=mc²</div>
+        <div class="chalk-formula" style="bottom:80px;left:120px;">a²+b²=c²</div>
+
+        <div class="home-hero">
+          <h1>O que você quer aprender hoje?</h1>
+          <p>Einstein gera um curso completo para você em segundos.</p>
+          <div class="generate-bar">
+            <input class="gen-input" placeholder="Ex: Lógica de programação, Matrizes..." value="Álgebra Linear"/>
+            <div class="level-pills">
+              <div class="pill">Iniciante</div>
+              <div class="pill active">Intermediário</div>
+              <div class="pill">Avançado</div>
+            </div>
+            <div class="gen-btn">Gerar com Einstein →</div>
+          </div>
+        </div>
+
+        <div class="section-title">Cursos da comunidade</div>
+        <div class="courses-grid">
+          <div class="course-card">
+            <div class="course-level level-i">Iniciante</div>
+            <div class="course-title">Lógica de Programação</div>
+            <div class="course-meta"><span>8 aulas</span><span>•</span><span>Quiz final</span></div>
+            <div class="course-creator">
+              <div class="avatar">M</div>
+              <div class="creator-name">por Maria S.</div>
+            </div>
+          </div>
+          <div class="course-card" style="border-color:rgba(168,213,162,0.3);">
+            <div class="course-level level-m">Intermediário</div>
+            <div class="course-title">Álgebra Linear</div>
+            <div class="course-meta"><span>11 aulas</span><span>•</span><span>Quiz final</span></div>
+            <div class="course-creator">
+              <div class="avatar">J</div>
+              <div class="creator-name">por João P.</div>
+            </div>
+          </div>
+          <div class="course-card">
+            <div class="course-level level-a">Avançado</div>
+            <div class="course-title">Redes Neurais</div>
+            <div class="course-meta"><span>14 aulas</span><span>•</span><span>Quiz final</span></div>
+            <div class="course-creator">
+              <div class="avatar">A</div>
+              <div class="creator-name">por Ana R.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ TELA 2: AULA ══ -->
+  <div>
+    <div class="screen-label">Tela 2 — Aula com Einstein</div>
+    <div class="browser-chrome">
+      <div class="browser-bar">
+        <div class="dot" style="background:#ff5f57"></div>
+        <div class="dot" style="background:#ffbd2e"></div>
+        <div class="dot" style="background:#28c840"></div>
+        <div class="url-bar">ainstein.vercel.app/course/xyz/lesson/3</div>
+      </div>
+      <div class="nav">
+        <div class="nav-logo">AI<span>.nstein</span></div>
+        <div style="flex:1; font-size:13px; color:#8aaa80;">← Álgebra Linear</div>
+        <div style="font-size:12px;color:#6a8a60;">Aula 3 de 11</div>
+      </div>
+      <div class="lesson-body">
+        <div class="lesson-progress-bar"><div class="lesson-progress-fill"></div></div>
+        <div class="lesson-main">
+
+          <!-- Einstein -->
+          <div class="einstein-panel">
+            <div class="einstein-name">EINSTEIN</div>
+            <!-- SVG Einstein (compact) -->
+            <svg width="110" height="145" viewBox="0 0 160 210" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <radialGradient id="sk" cx="50%" cy="40%" r="50%">
+                  <stop offset="0%" stop-color="#fdd9a0"/>
+                  <stop offset="100%" stop-color="#f0b060"/>
+                </radialGradient>
+                <radialGradient id="hr" cx="50%" cy="50%" r="50%">
+                  <stop offset="0%" stop-color="#f0ece0"/>
+                  <stop offset="100%" stop-color="#d8d4c8"/>
+                </radialGradient>
+              </defs>
+              <style>
+                .eb { animation: breathe2 3s ease-in-out infinite; transform-origin:80px 200px; }
+                .hl { animation: hairB 3s ease-in-out infinite; transform-origin:60px 140px; }
+                .hr2 { animation: hairB 3s ease-in-out infinite reverse; transform-origin:100px 140px; }
+                .ey2 { animation: blink2 4s ease-in-out infinite; }
+                @keyframes breathe2 { 0%,100%{transform:scaleY(1)} 50%{transform:scaleY(1.02) translateY(-2px)} }
+                @keyframes hairB { 0%,100%{transform:rotate(-1.5deg)} 50%{transform:rotate(1.5deg)} }
+                @keyframes blink2 { 0%,88%,100%{transform:scaleY(1)} 94%{transform:scaleY(0.08)} }
+              </style>
+              <g class="eb">
+                <ellipse cx="80" cy="170" rx="50" ry="38" fill="#1e2a10"/>
+                <path d="M 80 140 L 55 165 L 65 175 Z" fill="#141c08"/>
+                <path d="M 80 140 L 105 165 L 95 175 Z" fill="#141c08"/>
+                <rect x="70" y="140" width="20" height="40" rx="3" fill="#f5f0e0"/>
+                <path d="M 77 145 L 83 145 L 85 168 L 80 174 L 75 168 Z" fill="#5a2010"/>
+                <rect x="69" y="128" width="22" height="18" rx="5" fill="url(#sk)"/>
+                <ellipse cx="80" cy="98" rx="48" ry="52" fill="url(#sk)"/>
+                <ellipse cx="80" cy="52" rx="50" ry="34" fill="url(#hr)"/>
+                <g class="hl">
+                  <ellipse cx="34" cy="72" rx="20" ry="34" fill="url(#hr)" transform="rotate(-18,34,120)"/>
+                  <ellipse cx="22" cy="68" rx="13" ry="24" fill="#e8e4d8" transform="rotate(-28,22,120)"/>
+                </g>
+                <g class="hr2">
+                  <ellipse cx="126" cy="72" rx="20" ry="34" fill="url(#hr)" transform="rotate(18,126,120)"/>
+                  <ellipse cx="138" cy="68" rx="13" ry="24" fill="#e8e4d8" transform="rotate(28,138,120)"/>
+                </g>
+                <ellipse cx="33" cy="104" rx="9" ry="12" fill="#f0b060"/>
+                <ellipse cx="127" cy="104" rx="9" ry="12" fill="#f0b060"/>
+                <path d="M 48 82 Q 58 76 68 79" stroke="#e8e4d8" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+                <path d="M 92 79 Q 102 76 112 82" stroke="#e8e4d8" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+                <g class="ey2" style="transform-origin:58px 95px">
+                  <ellipse cx="58" cy="95" rx="11" ry="10" fill="white"/>
+                  <ellipse cx="59" cy="96" rx="7" ry="7.5" fill="#4a3820"/>
+                  <ellipse cx="59" cy="96" rx="4.5" ry="5" fill="#1a0a00"/>
+                  <ellipse cx="62" cy="93" rx="2" ry="2" fill="white"/>
+                </g>
+                <g class="ey2" style="transform-origin:102px 95px">
+                  <ellipse cx="102" cy="95" rx="11" ry="10" fill="white"/>
+                  <ellipse cx="103" cy="96" rx="7" ry="7.5" fill="#4a3820"/>
+                  <ellipse cx="103" cy="96" rx="4.5" ry="5" fill="#1a0a00"/>
+                  <ellipse cx="106" cy="93" rx="2" ry="2" fill="white"/>
+                </g>
+                <ellipse cx="80" cy="113" rx="8" ry="6" fill="#e8a050"/>
+                <ellipse cx="75" cy="116" rx="4" ry="3.5" fill="#d89040"/>
+                <ellipse cx="85" cy="116" rx="4" ry="3.5" fill="#d89040"/>
+                <path d="M 48 126 Q 57 120 65 124 Q 72 127 80 125 Q 88 127 95 124 Q 103 120 112 126 Q 103 135 95 131 Q 88 128 80 130 Q 72 128 65 131 Q 57 135 48 126 Z" fill="#f0ece0"/>
+                <path d="M 64 134 Q 80 141 96 134" stroke="#c08040" stroke-width="2" fill="none" stroke-linecap="round"/>
+                <ellipse cx="40" cy="108" rx="10" ry="7" fill="rgba(240,150,80,0.12)"/>
+                <ellipse cx="120" cy="108" rx="10" ry="7" fill="rgba(240,150,80,0.12)"/>
+              </g>
+            </svg>
+            <div class="einstein-state">💬 Explicando...</div>
+            <div style="font-size:11px;color:#4a6a40;text-align:center;margin-top:4px;">Álgebra Linear<br>Intermediário</div>
+          </div>
+
+          <!-- Content -->
+          <div class="content-panel">
+            <div class="lesson-title">Aula 3 — Produto Escalar e Ortogonalidade</div>
+            <div class="lesson-text">
+              O produto escalar é uma das operações mais fundamentais em álgebra linear. Dado dois vetores <strong style="color:#a8d5a2">u</strong> e <strong style="color:#a8d5a2">v</strong>, o produto escalar é definido como a soma dos produtos de suas componentes correspondentes.<span class="cursor"></span>
+            </div>
+            <div class="code-block">
+              <span class="code-comment"># Produto escalar em Python</span><br>
+              <span class="code-keyword">import</span> numpy <span class="code-keyword">as</span> np<br><br>
+              u = np.array([<span class="code-string">1, 2, 3</span>])<br>
+              v = np.array([<span class="code-string">4, 5, 6</span>])<br><br>
+              resultado = np.dot(u, v)  <span class="code-comment"># = 32</span>
+            </div>
+            <div class="lesson-text">
+              Dois vetores são <strong style="color:#a8d5a2">ortogonais</strong> quando seu produto escalar é igual a zero — o que significa que formam um ângulo de 90° entre si.
+            </div>
+          </div>
+
+          <!-- Sidebar -->
+          <div class="lessons-sidebar">
+            <div class="sidebar-title">Aulas do curso</div>
+            <div class="lesson-item done"><div class="lesson-dot done-dot">✓</div>Introdução a Vetores</div>
+            <div class="lesson-item done"><div class="lesson-dot done-dot">✓</div>Operações Básicas</div>
+            <div class="lesson-item active"><div class="lesson-dot active-dot">3</div>Produto Escalar</div>
+            <div class="lesson-item"><div class="lesson-dot">4</div>Matrizes</div>
+            <div class="lesson-item"><div class="lesson-dot">5</div>Transformações Lineares</div>
+            <div class="lesson-item"><div class="lesson-dot">6</div>Autovalores</div>
+            <div class="lesson-item"><div class="lesson-dot">7</div>Decomposição SVD</div>
+          </div>
+        </div>
+        <div class="lesson-nav">
+          <div class="btn-prev">← Anterior</div>
+          <div class="btn-complete">✓ Marcar como concluída</div>
+          <div class="btn-next">Próxima →</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

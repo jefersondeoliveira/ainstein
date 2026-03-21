@@ -1,0 +1,128 @@
+<h2>Einstein Pixel Art — v2</h2>
+<p class="subtitle">Versão mais fiel ao personagem. Escolha o estilo de fundo.</p>
+
+<div style="display:flex;gap:24px;justify-content:center;flex-wrap:wrap;margin-top:16px;">
+
+  <!-- A: Cosmic -->
+  <div class="card" data-choice="a" onclick="toggleSelect(this)" style="padding:0;overflow:hidden;width:220px;">
+    <div style="background:radial-gradient(ellipse at 40% 30%,#1a0535,#060010);height:320px;display:flex;align-items:center;justify-content:center;position:relative;">
+      <div style="position:absolute;top:14px;right:18px;color:#c084fc;font-family:serif;font-size:18px;font-weight:bold;text-shadow:0 0 10px #c084fc;letter-spacing:1px;">E=mc²</div>
+      <canvas id="pxA" width="160" height="200" style="image-rendering:pixelated;width:192px;height:240px;"></canvas>
+    </div>
+    <div class="card-body"><h3>A — Cosmos Roxo</h3><p>Fundo espacial com brilho roxo. Contraste marcante.</p></div>
+  </div>
+
+  <!-- B: Neon Blue -->
+  <div class="card" data-choice="b" onclick="toggleSelect(this)" style="padding:0;overflow:hidden;width:220px;">
+    <div style="background:linear-gradient(150deg,#050520,#0a0a35);height:320px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;">
+      <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(0,200,255,0.05) 1px,transparent 1px),linear-gradient(90deg,rgba(0,200,255,0.05) 1px,transparent 1px);background-size:16px 16px;"></div>
+      <div style="position:absolute;top:14px;right:18px;color:#00cfff;font-family:monospace;font-size:16px;font-weight:bold;text-shadow:0 0 12px #00cfff;">E=mc²</div>
+      <canvas id="pxB" width="160" height="200" style="image-rendering:pixelated;width:192px;height:240px;position:relative;z-index:2;"></canvas>
+    </div>
+    <div class="card-body"><h3>B — Neon Ciano</h3><p>Grid futurista com luz neon. Visual tech e moderno.</p></div>
+  </div>
+
+  <!-- C: Dark academia -->
+  <div class="card" data-choice="c" onclick="toggleSelect(this)" style="padding:0;overflow:hidden;width:220px;">
+    <div style="background:linear-gradient(160deg,#0f1a0f,#1a2e1a);height:320px;display:flex;align-items:center;justify-content:center;position:relative;">
+      <div style="position:absolute;inset:0;opacity:0.12;background-image:repeating-linear-gradient(0deg,#fff 0,#fff 1px,transparent 1px,transparent 32px);"></div>
+      <div style="position:absolute;top:14px;left:18px;color:rgba(180,230,160,0.45);font-family:serif;font-size:13px;font-style:italic;">∑ ∫ ∞ Δ λ</div>
+      <canvas id="pxC" width="160" height="200" style="image-rendering:pixelated;width:192px;height:240px;position:relative;z-index:2;"></canvas>
+    </div>
+    <div class="card-body"><h3>C — Quadro-negro</h3><p>Verde lousa com fórmulas ao fundo. Clássico acadêmico.</p></div>
+  </div>
+
+</div>
+
+<script>
+// Pixel size
+const P = 10;
+
+// Color keys
+const __ = null;   // transparent
+const WH = '#f0f0f0';  // white hair
+const GH = '#b8b8b8';  // grey hair shadow
+const DH = '#909090';  // dark hair
+const SK = '#f5c080';  // skin
+const SD = '#d4904a';  // skin shadow/dark
+const EY = '#1a0800';  // eye dark
+const EB = '#6a5030';  // eyebrow
+const NS = '#e8a060';  // nose
+const ND = '#c07838';  // nose dark
+const MU = '#e0e0d8';  // mustache light
+const MD = '#a8a8a0';  // mustache shadow
+const MT = '#4a3820';  // mouth
+const CT = '#2a2818';  // coat dark
+const CL = '#3a3828';  // coat light
+const SH = '#e8e8f8';  // shirt white
+const TI = '#8a2020';  // tie red
+
+// 16 wide × 20 tall grid — drawn with P=10 => 160×200 canvas
+const ROWS = [
+// 0    1    2    3    4    5    6    7    8    9   10   11   12   13   14   15
+  [__,  __,  WH,  WH,  WH,  WH,  WH,  WH,  WH,  WH,  WH,  WH,  WH,  WH,  __,  __], // 0 top hair
+  [__,  WH,  WH,  GH,  WH,  WH,  WH,  WH,  WH,  WH,  WH,  WH,  GH,  WH,  WH,  __], // 1
+  [WH,  WH,  GH,  WH,  WH,  WH,  WH,  WH,  WH,  WH,  WH,  WH,  WH,  GH,  WH,  WH], // 2 hair wide
+  [WH,  GH,  __,  __,  SK,  SK,  SK,  SK,  SK,  SK,  SK,  SK,  __,  __,  GH,  WH], // 3 face start
+  [GH,  __,  __,  SK,  SK,  SK,  SK,  SK,  SK,  SK,  SK,  SK,  SK,  __,  __,  GH], // 4
+  [__,  __,  __,  SK,  EB,  EB,  SK,  SK,  SK,  SK,  EB,  EB,  SK,  __,  __,  __], // 5 eyebrows
+  [__,  __,  SK,  SK,  EB,  EB,  SK,  SK,  SK,  SK,  EB,  EB,  SK,  SK,  __,  __], // 6
+  [__,  __,  SK,  SK,  EY,  EY,  SK,  SK,  SK,  SK,  EY,  EY,  SK,  SK,  __,  __], // 7 eyes
+  [__,  __,  SK,  SK,  SK,  SK,  SK,  SD,  SD,  SK,  SK,  SK,  SK,  SK,  __,  __], // 8 nose bridge
+  [__,  __,  SK,  SK,  SK,  SK,  NS,  ND,  ND,  NS,  SK,  SK,  SK,  SK,  __,  __], // 9 nose tip
+  [__,  __,  SK,  MU,  MU,  MU,  MU,  MU,  MU,  MU,  MU,  MU,  MU,  SK,  __,  __], // 10 mustache top
+  [__,  __,  MU,  MU,  MU,  MD,  MU,  MU,  MU,  MU,  MD,  MU,  MU,  MU,  __,  __], // 11 mustache full
+  [__,  __,  MU,  MU,  MD,  MD,  MU,  MT,  MT,  MU,  MD,  MD,  MU,  MU,  __,  __], // 12 mustache/mouth
+  [__,  __,  __,  SK,  SK,  SK,  SK,  SK,  SK,  SK,  SK,  SK,  SK,  __,  __,  __], // 13 chin
+  [__,  __,  CT,  CT,  CT,  SH,  SH,  SH,  SH,  SH,  SH,  CT,  CT,  CT,  __,  __], // 14 collar
+  [__,  CT,  CT,  CL,  CT,  SH,  TI,  TI,  TI,  SH,  CT,  CL,  CT,  CT,  CT,  __], // 15 chest tie
+  [CT,  CT,  CL,  CT,  CT,  SH,  TI,  TI,  TI,  SH,  CT,  CT,  CL,  CT,  CT,  CT], // 16
+  [CT,  CT,  CT,  CT,  CT,  SH,  TI,  TI,  TI,  SH,  CT,  CT,  CT,  CT,  CT,  CT], // 17
+  [CT,  CT,  CT,  CT,  CT,  CT,  CT,  CT,  CT,  CT,  CT,  CT,  CT,  CT,  CT,  CT], // 18
+  [CT,  CL,  CT,  CT,  CT,  CT,  CT,  CT,  CT,  CT,  CT,  CT,  CT,  CT,  CL,  CT], // 19
+];
+
+function drawPixelEinstein(canvasId, hairTint, eyeTint, coatTint) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  ROWS.forEach((row, r) => {
+    row.forEach((color, c) => {
+      if (!color) return;
+      // Optional tint override per version
+      let drawColor = color;
+      if ((color === WH || color === GH || color === DH) && hairTint) {
+        // Blend hair with tint for each version
+        drawColor = blendColor(color, hairTint, 0.15);
+      }
+      if (color === EY && eyeTint) {
+        drawColor = eyeTint;
+      }
+      if ((color === CT || color === CL) && coatTint) {
+        drawColor = blendColor(color, coatTint, 0.2);
+      }
+      ctx.fillStyle = drawColor;
+      ctx.fillRect(c * P, r * P, P - 1, P - 1);
+    });
+  });
+}
+
+function blendColor(hex, tint, amount) {
+  const parse = h => [parseInt(h.slice(1,3),16), parseInt(h.slice(3,5),16), parseInt(h.slice(5,7),16)];
+  const [r1,g1,b1] = parse(hex);
+  const [r2,g2,b2] = parse(tint);
+  const r = Math.round(r1*(1-amount) + r2*amount);
+  const g = Math.round(g1*(1-amount) + g2*amount);
+  const b = Math.round(b1*(1-amount) + b2*amount);
+  return `rgb(${r},${g},${b})`;
+}
+
+// A: purple tint hair, normal eyes, dark coat
+drawPixelEinstein('pxA', '#c084fc', null, '#3a1a6a');
+// B: cyan tint hair, cyan eyes, deep blue coat
+drawPixelEinstein('pxB', '#00cfff', '#00cfff', '#0a1a4a');
+// C: greenish tint hair, normal eyes, dark green coat
+drawPixelEinstein('pxC', '#a8d5a2', null, '#1a3a1a');
+</script>

@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(bash \"C:/Users/jefer/.claude/plugins/cache/claude-plugins-official/superpowers/5.0.5/skills/brainstorming/scripts/start-server.sh\" --project-dir \"D:/workspace/ainstein\")",
+      "Bash(cat \"D:/workspace/ainstein/.superpowers/brainstorm/\"*\"/.server-info\")",
+      "Bash(npx create-next-app@14 . --typescript --tailwind --eslint --app --src-dir=false --import-alias=\"@/*\")",
+      "Bash(npx create-next-app@14 /d/workspace/_ainstein_tmp --typescript --tailwind --eslint --app --src-dir=false --import-alias=\"@/*\")",
+      "Bash(npx create-next-app@14 /d/workspace/ainstein-tmp --typescript --tailwind --eslint --app --src-dir=false --import-alias=\"@/*\")",
+      "Bash(npm install:*)",
+      "Bash(node -e \"const pkg = require\\(''/d/workspace/ainstein/node_modules/next-auth/package.json''\\); console.log\\(''next-auth:'', pkg.version\\)\")",
+      "Bash(node -e \"const pkg = require\\(''/d/workspace/ainstein/node_modules/@auth/prisma-adapter/package.json''\\); console.log\\(''@auth/prisma-adapter:'', pkg.version\\)\")",
+      "Bash(node -e \"const pkg = require\\(''/d/workspace/ainstein/node_modules/prisma/package.json''\\); console.log\\(''prisma:'', pkg.version\\)\")",
+      "Bash(node -e \"const pkg = require\\(''/d/workspace/ainstein/node_modules/react-markdown/package.json''\\); console.log\\(''react-markdown:'', pkg.version\\)\")",
+      "Bash(node -e \"const pkg = require\\(''/d/workspace/ainstein/node_modules/ts-jest/package.json''\\); console.log\\(''ts-jest:'', pkg.version\\)\")",
+      "Bash(node -e \":*)",
+      "Bash(ls /d/workspace/ainstein/*.json)",
+      "Bash(ls /d/workspace/ainstein/*.lock)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(mv src/app app)",
+      "Bash(rmdir src:*)",
+      "Bash(sed -i 's|\"\"\"\"@/\\\\*\"\"\"\": \\\\[\"\"\"\"./src/\\\\*\"\"\"\"\\\\]|\"\"\"\"@/*\"\"\"\": [\"\"\"\"./*\"\"\"\"]|' tsconfig.json)",
+      "Bash(npm run:*)"
+    ]
+  }
+}

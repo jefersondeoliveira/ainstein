@@ -1,0 +1,197 @@
+<h2>Einstein Pixel Art</h2>
+<p class="subtitle">Versões do personagem em pixel art — clique para escolher o estilo</p>
+
+<div class="cards" style="grid-template-columns: repeat(3, 1fr); gap: 20px;">
+
+  <!-- Option A: Classic pixel dark bg -->
+  <div class="card" data-choice="a" onclick="toggleSelect(this)" style="padding:0;overflow:hidden;">
+    <div class="card-image" style="background:linear-gradient(135deg,#0a0a1a,#1a0533);height:300px;display:flex;align-items:center;justify-content:center;position:relative;">
+      <!-- Pixel art Einstein A - Classic -->
+      <style>
+        .px { image-rendering: pixelated; display: inline-block; }
+        .einstein-a {
+          width: 20px; height: 20px;
+          box-shadow:
+            /* Hair top row */
+            0px -6px 0 2px #e0e0e0,
+            2px -6px 0 2px #e0e0e0,
+            4px -6px 0 2px #e0e0e0,
+            6px -6px 0 2px #e0e0e0,
+            8px -6px 0 2px #d0d0d0,
+            -2px -6px 0 2px #c8c8c8,
+            /* Wild hair sides */
+            -4px -4px 0 2px #e0e0e0,
+            10px -4px 0 2px #d8d8d8,
+            -6px -2px 0 2px #c0c0c0,
+            12px -2px 0 2px #c8c8c8,
+            /* Head skin */
+            0px 0px 0 2px #f5c99a,
+            2px 0px 0 2px #f5c99a,
+            4px 0px 0 2px #f5c99a,
+            6px 0px 0 2px #f5c99a,
+            8px 0px 0 2px #f5c99a,
+            0px 2px 0 2px #f5c99a,
+            2px 2px 0 2px #f5c99a,
+            4px 2px 0 2px #f5c99a,
+            6px 2px 0 2px #f5c99a,
+            8px 2px 0 2px #f5c99a,
+            /* Eyes */
+            2px 2px 0 2px #2a1a0a,
+            6px 2px 0 2px #2a1a0a,
+            /* Nose */
+            4px 4px 0 2px #d4956a,
+            /* Mustache */
+            0px 6px 0 2px #b0b0b0,
+            2px 6px 0 2px #c8c8c8,
+            4px 6px 0 2px #c8c8c8,
+            6px 6px 0 2px #c8c8c8,
+            8px 6px 0 2px #b0b0b0,
+            /* Body - suit */
+            0px 8px 0 2px #2a2a4a,
+            2px 8px 0 2px #2a2a4a,
+            4px 8px 0 2px #3a3a5a,
+            6px 8px 0 2px #2a2a4a,
+            8px 8px 0 2px #2a2a4a,
+            0px 10px 0 2px #2a2a4a,
+            2px 10px 0 2px #2a2a4a,
+            4px 10px 0 2px #3a3a5a,
+            6px 10px 0 2px #2a2a4a,
+            8px 10px 0 2px #2a2a4a;
+        }
+      </style>
+      <div style="transform:scale(2.5);margin-bottom:10px;">
+        <div style="width:20px;height:20px;position:relative;">
+          <!-- Full pixel art Einstein using CSS grid approach -->
+          <canvas id="einsteinA" width="140" height="160" style="image-rendering:pixelated;width:140px;height:160px;"></canvas>
+        </div>
+      </div>
+      <div style="position:absolute;top:12px;right:16px;color:#c084fc;font-family:serif;font-size:16px;font-weight:bold;text-shadow:0 0 8px #c084fc;">E=mc²</div>
+    </div>
+    <div class="card-body">
+      <h3>A — Pixel Clássico</h3>
+      <p>Einstein pixel art em fundo escuro cosmico, paleta roxa/branca. Estilo retro game educativo.</p>
+    </div>
+  </div>
+
+  <!-- Option B: Pixel on green chalkboard -->
+  <div class="card" data-choice="b" onclick="toggleSelect(this)" style="padding:0;overflow:hidden;">
+    <div class="card-image" style="background:#1e3a1e;height:300px;display:flex;align-items:center;justify-content:center;position:relative;">
+      <canvas id="einsteinB" width="140" height="160" style="image-rendering:pixelated;width:140px;height:160px;"></canvas>
+      <div style="position:absolute;top:12px;left:16px;color:rgba(255,255,255,0.3);font-family:serif;font-size:14px;">∑ = ∫ ∞</div>
+    </div>
+    <div class="card-body">
+      <h3>B — Pixel Acadêmico</h3>
+      <p>Einstein pixel art em fundo de quadro-negro verde. Paleta terrosa com detalhes em giz.</p>
+    </div>
+  </div>
+
+  <!-- Option C: Pixel neon -->
+  <div class="card" data-choice="c" onclick="toggleSelect(this)" style="padding:0;overflow:hidden;">
+    <div class="card-image" style="background:linear-gradient(160deg,#050520,#10103a);height:300px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;">
+      <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(0,212,255,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(0,212,255,0.04) 1px,transparent 1px);background-size:14px 14px;"></div>
+      <canvas id="einsteinC" width="140" height="160" style="image-rendering:pixelated;width:140px;height:160px;position:relative;z-index:2;"></canvas>
+      <div style="position:absolute;top:12px;right:16px;color:#00d4ff;font-family:monospace;font-size:15px;font-weight:bold;text-shadow:0 0 10px #00d4ff;">E=mc²</div>
+    </div>
+    <div class="card-body">
+      <h3>C — Pixel Neon</h3>
+      <p>Einstein pixel art com detalhes neon ciano, fundo grid futurista. O mais impactante visualmente.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+// Draw pixel art Einstein on a canvas
+// Each pixel = 7px block
+// Grid: 20 wide x 23 tall
+function drawEinstein(canvasId, palette) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const S = 7; // pixel size
+
+  // Color palette
+  const _ = null; // transparent
+  const H = palette.hair;
+  const h = palette.hairShadow;
+  const S_ = palette.skin;
+  const s = palette.skinShadow;
+  const E = palette.eye;
+  const B = palette.eyebrow;
+  const M = palette.mustache;
+  const C = palette.coat;
+  const c = palette.coatShadow;
+  const T = palette.shirt;
+  const N = palette.nose;
+
+  // 20x23 pixel grid (col, row)
+  const grid = [
+    //0  1  2  3  4  5  6  7  8  9  10 11 12 13 14 15 16 17 18 19
+    [_,_,_,H,H,H,H,H,H,H,H,H,H,H,H,H,H,_,_,_], // 0
+    [_,_,H,H,H,H,H,H,H,H,H,H,H,H,H,H,H,H,_,_], // 1
+    [_,H,H,h,H,H,H,H,H,H,H,H,H,H,H,h,H,H,H,_], // 2
+    [H,H,h,h,H,H,H,H,H,H,H,H,H,H,H,h,h,H,H,H], // 3
+    [H,h,_,_,S_,S_,S_,S_,S_,S_,S_,S_,S_,S_,S_,S_,_,_,h,H], // 4
+    [_,_,_,_,S_,S_,S_,S_,S_,S_,S_,S_,S_,S_,S_,S_,_,_,_,_], // 5
+    [_,_,_,S_,S_,B,B,S_,S_,S_,S_,S_,B,B,S_,S_,S_,_,_,_], // 6 eyebrows
+    [_,_,_,S_,S_,E,E,S_,S_,S_,S_,S_,E,E,S_,S_,S_,_,_,_], // 7 eyes
+    [_,_,_,S_,S_,S_,S_,S_,s,N,N,s,S_,S_,S_,S_,S_,_,_,_], // 8 nose
+    [_,_,_,S_,S_,S_,S_,S_,S_,S_,S_,S_,S_,S_,S_,S_,S_,_,_,_], // 9
+    [_,_,_,S_,M,M,M,M,M,M,M,M,M,M,M,M,S_,_,_,_], // 10 mustache top
+    [_,_,_,M,M,M,M,M,M,M,M,M,M,M,M,M,M,_,_,_], // 11 mustache
+    [_,_,_,M,M,h,M,M,M,M,M,M,M,M,h,M,M,_,_,_], // 12
+    [_,_,_,S_,S_,S_,S_,S_,S_,S_,S_,S_,S_,S_,S_,S_,S_,_,_,_], // 13 chin
+    [_,_,C,C,C,C,C,T,T,T,T,T,T,C,C,C,C,C,_,_], // 14 neck/collar
+    [_,C,C,c,C,C,C,T,T,T,T,T,T,C,C,C,c,C,C,_], // 15 shoulders
+    [C,C,c,C,C,C,C,T,T,T,T,T,T,C,C,C,C,c,C,C], // 16
+    [C,C,C,C,C,C,C,T,T,T,T,T,T,C,C,C,C,C,C,C], // 17
+    [C,C,C,C,C,C,C,T,T,T,T,T,T,C,C,C,C,C,C,C], // 18
+    [C,C,C,C,C,C,C,C,C,C,C,C,C,C,C,C,C,C,C,C], // 19
+    [C,C,C,C,C,C,C,C,C,C,C,C,C,C,C,C,C,C,C,C], // 20
+    [C,C,C,C,C,C,C,C,C,C,C,C,C,C,C,C,C,C,C,C], // 21
+    [C,C,c,C,C,C,C,C,C,C,C,C,C,C,C,C,C,c,C,C], // 22
+  ];
+
+  grid.forEach((row, r) => {
+    row.forEach((color, col) => {
+      if (color) {
+        ctx.fillStyle = color;
+        ctx.fillRect(col * S + 10, r * S + 5, S - 1, S - 1);
+      }
+    });
+  });
+}
+
+const palettePurple = {
+  hair: '#d8d8e8', hairShadow: '#a0a0c0',
+  skin: '#f5c99a', skinShadow: '#d4906a',
+  eye: '#1a0a2a', eyebrow: '#555',
+  mustache: '#c8c8c8',
+  coat: '#2a2050', coatShadow: '#1a1040',
+  shirt: '#e8e8ff',
+  nose: '#d4956a'
+};
+
+const paletteGreen = {
+  hair: '#d5d5c5', hairShadow: '#a0a090',
+  skin: '#f0c48a', skinShadow: '#c8845a',
+  eye: '#1a0a00', eyebrow: '#504030',
+  mustache: '#bebea0',
+  coat: '#2a4020', coatShadow: '#1a2a10',
+  shirt: '#e8ffe0',
+  nose: '#c87850'
+};
+
+const paletteNeon = {
+  hair: '#e0e0f8', hairShadow: '#a0a0d8',
+  skin: '#f5ca9a', skinShadow: '#d4906a',
+  eye: '#00d4ff', eyebrow: '#0090bb',
+  mustache: '#c8c8e8',
+  coat: '#0a1040', coatShadow: '#050820',
+  shirt: '#00d4ff',
+  nose: '#d4906a'
+};
+
+drawEinstein('einsteinA', palettePurple);
+drawEinstein('einsteinB', paletteGreen);
+drawEinstein('einsteinC', paletteNeon);
+</script>

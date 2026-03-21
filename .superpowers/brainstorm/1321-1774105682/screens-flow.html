@@ -1,0 +1,57 @@
+<h2>Estrutura de Telas — AI.nstein</h2>
+<p class="subtitle">Fluxo completo do usuário pela aplicação</p>
+
+<div style="display:flex;flex-direction:column;gap:12px;margin-top:16px;">
+
+  <!-- Row 1 -->
+  <div style="display:flex;gap:12px;align-items:stretch;">
+    <div style="flex:1;background:#1a1a2e;border:1px solid #e94560;border-radius:12px;padding:16px;">
+      <div style="font-size:11px;color:#e94560;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">/ (Home)</div>
+      <div style="font-weight:bold;margin-bottom:6px;">Feed de Cursos</div>
+      <div style="font-size:13px;color:#aaa;">Grid com todos os cursos gerados. Mostra criador, nível, nº de aulas. Botão "Gerar curso" em destaque.</div>
+    </div>
+    <div style="display:flex;align-items:center;font-size:20px;color:#555;">→</div>
+    <div style="flex:1;background:#1a1a2e;border:1px solid #0f3460;border-radius:12px;padding:16px;">
+      <div style="font-size:11px;color:#4a90e2;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">/login</div>
+      <div style="font-weight:bold;margin-bottom:6px;">Autenticação</div>
+      <div style="font-size:13px;color:#aaa;">Login com Google ou GitHub via NextAuth. Redireciona para home após auth.</div>
+    </div>
+  </div>
+
+  <!-- Arrow down -->
+  <div style="text-align:center;font-size:20px;color:#555;">↓</div>
+
+  <!-- Row 2 -->
+  <div style="display:flex;gap:12px;align-items:stretch;">
+    <div style="flex:1;background:#1a1a2e;border:1px solid #f5a623;border-radius:12px;padding:16px;">
+      <div style="font-size:11px;color:#f5a623;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">/generate</div>
+      <div style="font-weight:bold;margin-bottom:6px;">Gerador de Curso</div>
+      <div style="font-size:13px;color:#aaa;">Campo: tema do curso. Seletor: Iniciante / Intermediário / Avançado. Botão "Gerar com Einstein". Requer login.</div>
+    </div>
+    <div style="display:flex;align-items:center;font-size:20px;color:#555;">→</div>
+    <div style="flex:1;background:#1a1a2e;border:1px solid #7ed321;border-radius:12px;padding:16px;">
+      <div style="font-size:11px;color:#7ed321;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">/course/[id]</div>
+      <div style="font-weight:bold;margin-bottom:6px;">Página do Curso</div>
+      <div style="font-size:13px;color:#aaa;">Lista de aulas (aparecem progressivamente via SSE). Progresso salvo. Status: gerando / pronto.</div>
+    </div>
+  </div>
+
+  <!-- Arrow down -->
+  <div style="text-align:center;font-size:20px;color:#555;">↓</div>
+
+  <!-- Row 3 -->
+  <div style="display:flex;gap:12px;align-items:stretch;">
+    <div style="flex:1;background:#1a1a2e;border:1px solid #9b59b6;border-radius:12px;padding:16px;">
+      <div style="font-size:11px;color:#9b59b6;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">/course/[id]/lesson/[n]</div>
+      <div style="font-weight:bold;margin-bottom:6px;">Aula com Einstein</div>
+      <div style="font-size:13px;color:#aaa;">Einstein 2D animado à esquerda. Conteúdo com typewriter à direita. Código destacado. Botão "Marcar como concluída".</div>
+    </div>
+    <div style="display:flex;align-items:center;font-size:20px;color:#555;">→</div>
+    <div style="flex:1;background:#1a1a2e;border:1px solid #e74c3c;border-radius:12px;padding:16px;">
+      <div style="font-size:11px;color:#e74c3c;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">/course/[id]/test</div>
+      <div style="font-weight:bold;margin-bottom:6px;">Teste Final</div>
+      <div style="font-size:13px;color:#aaa;">Múltipla escolha gerado pela IA. Einstein apresenta cada questão. Resultado salvo com pontuação.</div>
+    </div>
+  </div>
+
+</div>

@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Einstein Cartoon</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: radial-gradient(ellipse at 40% 30%, #1a0535, #060010);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Segoe UI', sans-serif;
+    color: #fff;
+  }
+  h2 { font-size: 22px; margin-bottom: 6px; color: #e0c8ff; }
+  .subtitle { color: #9970cc; font-size: 14px; margin-bottom: 32px; }
+
+  .stage {
+    display: flex;
+    gap: 48px;
+    align-items: flex-end;
+    justify-content: center;
+  }
+
+  .theme-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    border: 2px solid transparent;
+    border-radius: 20px;
+    padding: 16px;
+    transition: all 0.2s;
+  }
+  .theme-card:hover { border-color: rgba(255,255,255,0.3); background: rgba(255,255,255,0.05); }
+  .theme-card.selected { border-color: #c084fc; background: rgba(192,132,252,0.1); }
+  .theme-card h3 { margin-top: 12px; font-size: 15px; }
+  .theme-card p { font-size: 12px; color: #aaa; text-align: center; max-width: 160px; margin-top: 4px; }
+
+  /* Einstein SVG animations */
+  @keyframes breathe {
+    0%, 100% { transform: scaleY(1) translateY(0); }
+    50% { transform: scaleY(1.015) translateY(-2px); }
+  }
+  @keyframes blink {
+    0%, 90%, 100% { transform: scaleY(1); }
+    95% { transform: scaleY(0.05); }
+  }
+  @keyframes hairBounce {
+    0%, 100% { transform: rotate(-1deg); }
+    50% { transform: rotate(1deg); }
+  }
+  @keyframes eyebrowRaise {
+    0%, 70%, 100% { transform: translateY(0); }
+    80% { transform: translateY(-3px); }
+  }
+  @keyframes talk {
+    0%, 100% { d: path('M 52 110 Q 70 115 88 110'); }
+    25% { d: path('M 52 112 Q 70 122 88 112'); }
+    50% { d: path('M 52 110 Q 70 118 88 110'); }
+    75% { d: path('M 52 113 Q 70 120 88 113'); }
+  }
+
+  .einstein-body { animation: breathe 3s ease-in-out infinite; transform-origin: center bottom; }
+  .einstein-eyes { animation: blink 4s ease-in-out infinite; transform-origin: center; }
+  .hair-left { animation: hairBounce 3s ease-in-out infinite; transform-origin: right bottom; }
+  .hair-right { animation: hairBounce 3s ease-in-out infinite reverse; transform-origin: left bottom; }
+  .eyebrow-left, .eyebrow-right { animation: eyebrowRaise 5s ease-in-out infinite; }
+
+  /* Floating formula */
+  @keyframes floatFormula {
+    0%, 100% { transform: translateY(0) rotate(-3deg); opacity: 0.8; }
+    50% { transform: translateY(-12px) rotate(3deg); opacity: 1; }
+  }
+  .formula { animation: floatFormula 4s ease-in-out infinite; }
+
+  .palette { display: flex; gap: 6px; margin-top: 8px; }
+  .swatch { width: 16px; height: 16px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.2); }
+</style>
+</head>
+<body>
+
+<h2>AI.nstein — Estilo do Personagem</h2>
+<p class="subtitle">Einstein cartoon animado com respiração, piscada e expressão. Clique para escolher o tema.</p>
+
+<div class="stage">
+
+  <!-- Version A: Cosmic Purple -->
+  <div class="theme-card" id="themeA" onclick="selectTheme('a')">
+    <svg width="160" height="220" viewBox="0 0 160 300" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="skinA" cx="50%" cy="40%" r="50%">
+          <stop offset="0%" stop-color="#fdd9a0"/>
+          <stop offset="100%" stop-color="#f0b060"/>
+        </radialGradient>
+        <radialGradient id="hairGlowA" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#d8d0ff"/>
+          <stop offset="100%" stop-color="#b0a0f0"/>
+        </radialGradient>
+        <filter id="softA">
+          <feGaussianBlur stdDeviation="1.2" result="blur"/>
+          <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+        </filter>
+      </defs>
+
+      <!-- Formula floating -->
+      <g class="formula" style="transform-origin:120px 30px;">
+        <text x="95" y="35" font-family="serif" font-size="16" fill="#c084fc" font-weight="bold" opacity="0.9">E=mc²</text>
+      </g>
+
+      <g class="einstein-body">
+        <!-- Shadow under character -->
+        <ellipse cx="80" cy="295" rx="45" ry="8" fill="rgba(0,0,0,0.4)"/>
+
+        <!-- COAT / BODY -->
+        <ellipse cx="80" cy="255" rx="52" ry="42" fill="#2a1845"/>
+        <!-- Lapels -->
+        <path d="M 80 200 L 55 230 L 65 255 Z" fill="#1a1030"/>
+        <path d="M 80 200 L 105 230 L 95 255 Z" fill="#1a1030"/>
+        <!-- Shirt / tie -->
+        <rect x="70" y="200" width="20" height="60" rx="3" fill="#f0f0ff"/>
+        <path d="M 77 205 L 83 205 L 86 240 L 80 248 L 74 240 Z" fill="#8020a0"/>
+
+        <!-- NECK -->
+        <rect x="68" y="185" width="24" height="22" rx="6" fill="url(#skinA)"/>
+
+        <!-- HEAD -->
+        <ellipse cx="80" cy="148" rx="52" ry="56" fill="url(#skinA)" filter="url(#softA)"/>
+
+        <!-- WILD HAIR - back/top -->
+        <ellipse cx="80" cy="95" rx="54" ry="38" fill="url(#hairGlowA)"/>
+
+        <!-- Hair left side - wild strands -->
+        <g class="hair-left">
+          <ellipse cx="30" cy="115" rx="22" ry="38" fill="url(#hairGlowA)" transform="rotate(-20,30,140)"/>
+          <ellipse cx="18" cy="110" rx="14" ry="28" fill="#c8c0f8" transform="rotate(-30,18,140)"/>
+          <ellipse cx="24" cy="98" rx="10" ry="22" fill="#d8d0ff" transform="rotate(-15,24,130)"/>
+        </g>
+
+        <!-- Hair right side - wild strands -->
+        <g class="hair-right">
+          <ellipse cx="130" cy="115" rx="22" ry="38" fill="url(#hairGlowA)" transform="rotate(20,130,140)"/>
+          <ellipse cx="142" cy="110" rx="14" ry="28" fill="#c8c0f8" transform="rotate(30,142,140)"/>
+          <ellipse cx="136" cy="98" rx="10" ry="22" fill="#d8d0ff" transform="rotate(15,136,130)"/>
+        </g>
+
+        <!-- Ear left -->
+        <ellipse cx="29" cy="155" rx="10" ry="14" fill="#f0b060"/>
+        <ellipse cx="31" cy="155" rx="6" ry="10" fill="#e8a050"/>
+
+        <!-- Ear right -->
+        <ellipse cx="131" cy="155" rx="10" ry="14" fill="#f0b060"/>
+        <ellipse cx="129" cy="155" rx="6" ry="10" fill="#e8a050"/>
+
+        <!-- EYEBROWS -->
+        <g class="eyebrow-left">
+          <path d="M 44 125 Q 55 118 66 122" stroke="#c8c0f0" stroke-width="5" fill="none" stroke-linecap="round"/>
+          <path d="M 44 126 Q 55 119 66 123" stroke="#a090d8" stroke-width="3" fill="none" stroke-linecap="round"/>
+        </g>
+        <g class="eyebrow-right">
+          <path d="M 94 122 Q 105 118 116 125" stroke="#c8c0f0" stroke-width="5" fill="none" stroke-linecap="round"/>
+          <path d="M 94 123 Q 105 119 116 126" stroke="#a090d8" stroke-width="3" fill="none" stroke-linecap="round"/>
+        </g>
+
+        <!-- EYES -->
+        <g class="einstein-eyes" style="transform-origin: 58px 140px;">
+          <!-- Left eye white -->
+          <ellipse cx="58" cy="140" rx="13" ry="12" fill="white"/>
+          <ellipse cx="59" cy="141" rx="8" ry="9" fill="#3a2a8a"/>
+          <ellipse cx="59" cy="141" rx="5" ry="6" fill="#1a0a40"/>
+          <ellipse cx="62" cy="138" rx="2.5" ry="2.5" fill="white"/>
+        </g>
+        <g class="einstein-eyes" style="transform-origin: 102px 140px;">
+          <!-- Right eye white -->
+          <ellipse cx="102" cy="140" rx="13" ry="12" fill="white"/>
+          <ellipse cx="103" cy="141" rx="8" ry="9" fill="#3a2a8a"/>
+          <ellipse cx="103" cy="141" rx="5" ry="6" fill="#1a0a40"/>
+          <ellipse cx="106" cy="138" rx="2.5" ry="2.5" fill="white"/>
+        </g>
+
+        <!-- NOSE -->
+        <ellipse cx="80" cy="162" rx="9" ry="7" fill="#e8a050"/>
+        <ellipse cx="74" cy="166" rx="5" ry="4" fill="#d89040"/>
+        <ellipse cx="86" cy="166" rx="5" ry="4" fill="#d89040"/>
+
+        <!-- MUSTACHE - big and fluffy -->
+        <path d="M 45 178 Q 55 170 65 175 Q 70 178 80 176 Q 90 178 95 175 Q 105 170 115 178 Q 105 188 95 183 Q 90 180 80 182 Q 70 180 65 183 Q 55 188 45 178 Z" fill="#e8e0f8"/>
+        <path d="M 52 180 Q 65 174 80 177 Q 95 174 108 180" stroke="#c8c0e8" stroke-width="2" fill="none"/>
+
+        <!-- MOUTH (small, under mustache) -->
+        <path d="M 65 188 Q 80 195 95 188" stroke="#c08040" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+
+        <!-- Cheek blush -->
+        <ellipse cx="40" cy="160" rx="12" ry="8" fill="rgba(240,100,100,0.15)"/>
+        <ellipse cx="120" cy="160" rx="12" ry="8" fill="rgba(240,100,100,0.15)"/>
+
+        <!-- Wrinkle lines (character detail) -->
+        <path d="M 44 135 Q 48 140 44 145" stroke="#d4904a" stroke-width="1" fill="none" opacity="0.4"/>
+        <path d="M 116 135 Q 112 140 116 145" stroke="#d4904a" stroke-width="1" fill="none" opacity="0.4"/>
+      </g>
+    </svg>
+    <h3>A — Cosmos Roxo</h3>
+    <p>Paleta roxa/lavanda. Elegante e misterioso.</p>
+    <div class="palette">
+      <div class="swatch" style="background:#1a0535;"></div>
+      <div class="swatch" style="background:#c084fc;"></div>
+      <div class="swatch" style="background:#b0a0f0;"></div>
+      <div class="swatch" style="background:#f0f0ff;"></div>
+    </div>
+  </div>
+
+  <!-- Version B: Neon Cyan (bigger, featured) -->
+  <div class="theme-card" id="themeB" onclick="selectTheme('b')" style="transform:scale(1.12);z-index:2;">
+    <svg width="160" height="220" viewBox="0 0 160 300" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="skinB" cx="50%" cy="40%" r="50%">
+          <stop offset="0%" stop-color="#fdd9a0"/>
+          <stop offset="100%" stop-color="#f0b060"/>
+        </radialGradient>
+        <radialGradient id="hairGlowB" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#e8f8ff"/>
+          <stop offset="100%" stop-color="#c0e8f8"/>
+        </radialGradient>
+      </defs>
+
+      <g class="formula" style="transform-origin:120px 30px;">
+        <text x="95" y="35" font-family="monospace" font-size="15" fill="#00cfff" font-weight="bold" opacity="0.9">E=mc²</text>
+      </g>
+
+      <g class="einstein-body">
+        <ellipse cx="80" cy="295" rx="45" ry="8" fill="rgba(0,0,0,0.4)"/>
+        <ellipse cx="80" cy="255" rx="52" ry="42" fill="#0a1840"/>
+        <path d="M 80 200 L 55 230 L 65 255 Z" fill="#060e28"/>
+        <path d="M 80 200 L 105 230 L 95 255 Z" fill="#060e28"/>
+        <rect x="70" y="200" width="20" height="60" rx="3" fill="#e8f8ff"/>
+        <path d="M 77 205 L 83 205 L 86 240 L 80 248 L 74 240 Z" fill="#006888"/>
+
+        <rect x="68" y="185" width="24" height="22" rx="6" fill="url(#skinB)"/>
+        <ellipse cx="80" cy="148" rx="52" ry="56" fill="url(#skinB)"/>
+        <ellipse cx="80" cy="95" rx="54" ry="38" fill="url(#hairGlowB)"/>
+
+        <g class="hair-left">
+          <ellipse cx="30" cy="115" rx="22" ry="38" fill="url(#hairGlowB)" transform="rotate(-20,30,140)"/>
+          <ellipse cx="18" cy="110" rx="14" ry="28" fill="#d0f0ff" transform="rotate(-30,18,140)"/>
+          <ellipse cx="24" cy="98" rx="10" ry="22" fill="#e8f8ff" transform="rotate(-15,24,130)"/>
+        </g>
+        <g class="hair-right">
+          <ellipse cx="130" cy="115" rx="22" ry="38" fill="url(#hairGlowB)" transform="rotate(20,130,140)"/>
+          <ellipse cx="142" cy="110" rx="14" ry="28" fill="#d0f0ff" transform="rotate(30,142,140)"/>
+          <ellipse cx="136" cy="98" rx="10" ry="22" fill="#e8f8ff" transform="rotate(15,136,130)"/>
+        </g>
+
+        <ellipse cx="29" cy="155" rx="10" ry="14" fill="#f0b060"/>
+        <ellipse cx="31" cy="155" rx="6" ry="10" fill="#e8a050"/>
+        <ellipse cx="131" cy="155" rx="10" ry="14" fill="#f0b060"/>
+        <ellipse cx="129" cy="155" rx="6" ry="10" fill="#e8a050"/>
+
+        <g class="eyebrow-left">
+          <path d="M 44 125 Q 55 118 66 122" stroke="#d0f0ff" stroke-width="5" fill="none" stroke-linecap="round"/>
+        </g>
+        <g class="eyebrow-right">
+          <path d="M 94 122 Q 105 118 116 125" stroke="#d0f0ff" stroke-width="5" fill="none" stroke-linecap="round"/>
+        </g>
+
+        <g class="einstein-eyes" style="transform-origin: 58px 140px;">
+          <ellipse cx="58" cy="140" rx="13" ry="12" fill="white"/>
+          <ellipse cx="59" cy="141" rx="8" ry="9" fill="#006888"/>
+          <ellipse cx="59" cy="141" rx="5" ry="6" fill="#003040"/>
+          <ellipse cx="62" cy="138" rx="2.5" ry="2.5" fill="white"/>
+        </g>
+        <g class="einstein-eyes" style="transform-origin: 102px 140px;">
+          <ellipse cx="102" cy="140" rx="13" ry="12" fill="white"/>
+          <ellipse cx="103" cy="141" rx="8" ry="9" fill="#006888"/>
+          <ellipse cx="103" cy="141" rx="5" ry="6" fill="#003040"/>
+          <ellipse cx="106" cy="138" rx="2.5" ry="2.5" fill="white"/>
+        </g>
+
+        <ellipse cx="80" cy="162" rx="9" ry="7" fill="#e8a050"/>
+        <ellipse cx="74" cy="166" rx="5" ry="4" fill="#d89040"/>
+        <ellipse cx="86" cy="166" rx="5" ry="4" fill="#d89040"/>
+
+        <path d="M 45 178 Q 55 170 65 175 Q 70 178 80 176 Q 90 178 95 175 Q 105 170 115 178 Q 105 188 95 183 Q 90 180 80 182 Q 70 180 65 183 Q 55 188 45 178 Z" fill="#e8f4ff"/>
+        <path d="M 65 188 Q 80 195 95 188" stroke="#c08040" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <ellipse cx="40" cy="160" rx="12" ry="8" fill="rgba(0,200,255,0.1)"/>
+        <ellipse cx="120" cy="160" rx="12" ry="8" fill="rgba(0,200,255,0.1)"/>
+      </g>
+    </svg>
+    <h3>B — Neon Ciano ✦ recomendado</h3>
+    <p>Azul escuro + ciano. Moderno, tech, impactante.</p>
+    <div class="palette">
+      <div class="swatch" style="background:#050520;"></div>
+      <div class="swatch" style="background:#00cfff;"></div>
+      <div class="swatch" style="background:#0a1840;"></div>
+      <div class="swatch" style="background:#e8f8ff;"></div>
+    </div>
+  </div>
+
+  <!-- Version C: Warm Academia -->
+  <div class="theme-card" id="themeC" onclick="selectTheme('c')">
+    <svg width="160" height="220" viewBox="0 0 160 300" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="skinC" cx="50%" cy="40%" r="50%">
+          <stop offset="0%" stop-color="#fdd9a0"/>
+          <stop offset="100%" stop-color="#f0b060"/>
+        </radialGradient>
+        <radialGradient id="hairGlowC" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#f0ece0"/>
+          <stop offset="100%" stop-color="#d8d4c8"/>
+        </radialGradient>
+      </defs>
+
+      <g class="formula" style="transform-origin:120px 30px;">
+        <text x="95" y="35" font-family="serif" font-size="16" fill="#a8d5a2" font-weight="bold" opacity="0.9">E=mc²</text>
+      </g>
+
+      <g class="einstein-body">
+        <ellipse cx="80" cy="295" rx="45" ry="8" fill="rgba(0,0,0,0.4)"/>
+        <ellipse cx="80" cy="255" rx="52" ry="42" fill="#1e2a10"/>
+        <path d="M 80 200 L 55 230 L 65 255 Z" fill="#141c08"/>
+        <path d="M 80 200 L 105 230 L 95 255 Z" fill="#141c08"/>
+        <rect x="70" y="200" width="20" height="60" rx="3" fill="#f5f0e0"/>
+        <path d="M 77 205 L 83 205 L 86 240 L 80 248 L 74 240 Z" fill="#5a2010"/>
+
+        <rect x="68" y="185" width="24" height="22" rx="6" fill="url(#skinC)"/>
+        <ellipse cx="80" cy="148" rx="52" ry="56" fill="url(#skinC)"/>
+        <ellipse cx="80" cy="95" rx="54" ry="38" fill="url(#hairGlowC)"/>
+
+        <g class="hair-left">
+          <ellipse cx="30" cy="115" rx="22" ry="38" fill="url(#hairGlowC)" transform="rotate(-20,30,140)"/>
+          <ellipse cx="18" cy="110" rx="14" ry="28" fill="#e8e4d8" transform="rotate(-30,18,140)"/>
+          <ellipse cx="24" cy="98" rx="10" ry="22" fill="#f0ece0" transform="rotate(-15,24,130)"/>
+        </g>
+        <g class="hair-right">
+          <ellipse cx="130" cy="115" rx="22" ry="38" fill="url(#hairGlowC)" transform="rotate(20,130,140)"/>
+          <ellipse cx="142" cy="110" rx="14" ry="28" fill="#e8e4d8" transform="rotate(30,142,140)"/>
+          <ellipse cx="136" cy="98" rx="10" ry="22" fill="#f0ece0" transform="rotate(15,136,130)"/>
+        </g>
+
+        <ellipse cx="29" cy="155" rx="10" ry="14" fill="#f0b060"/>
+        <ellipse cx="31" cy="155" rx="6" ry="10" fill="#e8a050"/>
+        <ellipse cx="131" cy="155" rx="10" ry="14" fill="#f0b060"/>
+        <ellipse cx="129" cy="155" rx="6" ry="10" fill="#e8a050"/>
+
+        <g class="eyebrow-left">
+          <path d="M 44 125 Q 55 118 66 122" stroke="#e8e4d8" stroke-width="5" fill="none" stroke-linecap="round"/>
+        </g>
+        <g class="eyebrow-right">
+          <path d="M 94 122 Q 105 118 116 125" stroke="#e8e4d8" stroke-width="5" fill="none" stroke-linecap="round"/>
+        </g>
+
+        <g class="einstein-eyes" style="transform-origin: 58px 140px;">
+          <ellipse cx="58" cy="140" rx="13" ry="12" fill="white"/>
+          <ellipse cx="59" cy="141" rx="8" ry="9" fill="#4a3820"/>
+          <ellipse cx="59" cy="141" rx="5" ry="6" fill="#1a0a00"/>
+          <ellipse cx="62" cy="138" rx="2.5" ry="2.5" fill="white"/>
+        </g>
+        <g class="einstein-eyes" style="transform-origin: 102px 140px;">
+          <ellipse cx="102" cy="140" rx="13" ry="12" fill="white"/>
+          <ellipse cx="103" cy="141" rx="8" ry="9" fill="#4a3820"/>
+          <ellipse cx="103" cy="141" rx="5" ry="6" fill="#1a0a00"/>
+          <ellipse cx="106" cy="138" rx="2.5" ry="2.5" fill="white"/>
+        </g>
+
+        <ellipse cx="80" cy="162" rx="9" ry="7" fill="#e8a050"/>
+        <ellipse cx="74" cy="166" rx="5" ry="4" fill="#d89040"/>
+        <ellipse cx="86" cy="166" rx="5" ry="4" fill="#d89040"/>
+
+        <path d="M 45 178 Q 55 170 65 175 Q 70 178 80 176 Q 90 178 95 175 Q 105 170 115 178 Q 105 188 95 183 Q 90 180 80 182 Q 70 180 65 183 Q 55 188 45 178 Z" fill="#f0ece0"/>
+        <path d="M 65 188 Q 80 195 95 188" stroke="#c08040" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <ellipse cx="40" cy="160" rx="12" ry="8" fill="rgba(240,150,80,0.15)"/>
+        <ellipse cx="120" cy="160" rx="12" ry="8" fill="rgba(240,150,80,0.15)"/>
+      </g>
+    </svg>
+    <h3>C — Academia Quente</h3>
+    <p>Verde lousa + sépia. Clássico e acolhedor.</p>
+    <div class="palette">
+      <div class="swatch" style="background:#0f1a0f;"></div>
+      <div class="swatch" style="background:#a8d5a2;"></div>
+      <div class="swatch" style="background:#1e2a10;"></div>
+      <div class="swatch" style="background:#f5f0e0;"></div>
+    </div>
+  </div>
+
+</div>
+
+<div id="selection-bar" style="margin-top:28px;height:28px;text-align:center;font-size:14px;color:#c084fc;"></div>
+
+<script>
+let selected = null;
+function selectTheme(id) {
+  document.querySelectorAll('.theme-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById('theme' + id.toUpperCase()).classList.add('selected');
+  selected = id;
+  const names = { a: 'Cosmos Roxo', b: 'Neon Ciano', c: 'Academia Quente' };
+  document.getElementById('selection-bar').textContent = '✓ Selecionado: ' + names[id];
+  // record for events file
+  try {
+    fetch('/__record', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({type:'click', choice: id, text: names[id], timestamp: Date.now()})
+    }).catch(()=>{});
+  } catch(e) {}
+}
+</script>
+</body>
+</html>
