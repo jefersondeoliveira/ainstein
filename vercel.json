@@ -1,0 +1,7 @@
+{
+  "functions": {
+    "app/api/courses/[id]/stream/route.ts": {
+      "maxDuration": 300
+    }
+  }
+}
