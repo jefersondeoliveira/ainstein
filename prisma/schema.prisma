@@ -67,7 +67,9 @@ model Course {
   quiz      Quiz?
   progress  UserProgress[]
   results   TestResult[]
-  createdAt DateTime     @default(now())
+  createdAt   DateTime     @default(now())
+  retryCount  Int          @default(0)
+  lastRetryAt DateTime?
 }
 
 model Lesson {
