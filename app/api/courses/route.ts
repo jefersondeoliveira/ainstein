@@ -37,8 +37,9 @@ export async function POST(req: NextRequest) {
   let topic: string
   try {
     topic = sanitizeTopic(body.topic ?? '')
-  } catch (e: any) {
-    return NextResponse.json({ error: e.message }, { status: 400 })
+  } catch (e) {
+    const message = e instanceof Error ? e.message : 'Invalid topic'
+    return NextResponse.json({ error: message }, { status: 400 })
   }
 
   const levelMap: Record<string, Level> = {
