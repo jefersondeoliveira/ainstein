@@ -24,6 +24,7 @@ export async function POST(_req: NextRequest, { params }: { params: { id: string
 
   // Limpar dados parciais e reiniciar
   await db.lesson.deleteMany({ where: { courseId: params.id } })
+  await db.quiz.deleteMany({ where: { courseId: params.id } })
   await db.course.update({
     where: { id: params.id },
     data: {
