@@ -15,7 +15,7 @@ interface CourseItem {
 }
 
 async function getCourses(): Promise<{ courses: CourseItem[]; nextCursor: string | null }> {
-  const res = await fetch(`${process.env.NEXTAUTH_URL}/api/courses`, { next: { revalidate: 60 } })
+  const res = await fetch(`${process.env.NEXTAUTH_URL}/api/courses`, { cache: 'no-store' })
   if (!res.ok) return { courses: [], nextCursor: null }
   return res.json()
 }

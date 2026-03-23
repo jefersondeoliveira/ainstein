@@ -10,6 +10,7 @@ export async function checkCourseRateLimit(userId: string): Promise<{ ok: boolea
   return { ok: count < 5 }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function checkRetryRateLimit(courseId: string): Promise<{ ok: boolean }> {
   // For MVP: retry rate limiting is enforced in the retry route handler
   // by checking course status. This stub always returns ok.

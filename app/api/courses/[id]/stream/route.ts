@@ -6,6 +6,9 @@ import { stackspotChatText } from '@/lib/stackspot'
 
 export const maxDuration = 300
 
+// Lock em memória: evita geração concorrente do mesmo curso (React StrictMode abre 2 streams)
+const activeGenerations = new Set<string>()
+
 function sseEvent(event: string, data: unknown): string {
   return `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`
 }
@@ -27,30 +30,39 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
   const stream = new TransformStream<Uint8Array, Uint8Array>()
   const writer = stream.writable.getWriter()
 
-  const send = async (event: string, data: unknown) => {
-    await writer.write(encoder.encode(sseEvent(event, data)))
+  let writerClosed = false
+  const closeWriter = async () => {
+    if (!writerClosed) { writerClosed = true; await writer.close() }
   }
 
-  // Reconnect: curso já tem lições — enviar catchup
+  const send = async (event: string, data: unknown) => {
+    if (!writerClosed) await writer.write(encoder.encode(sseEvent(event, data)))
+  }
+
   const runGeneration = async () => {
     try {
-      if (course.lessons.length > 0) {
+      // Catchup: curso finalizado — replay estado atual e encerra
+      if (course.status === 'READY' || course.status === 'FAILED') {
         for (const lesson of course.lessons) {
           await send('lesson_created', { id: lesson.id, title: lesson.title, order: lesson.order })
           if (lesson.status === 'READY' && lesson.content) {
             await send('lesson_ready', { id: lesson.id, content: lesson.content })
           }
         }
-        if (course.status === 'READY') {
-          await send('course_ready', { courseId: course.id })
-          await writer.close()
-          return
-        }
-        if (course.status === 'FAILED') {
-          await send('course_failed', { courseId: course.id })
-          await writer.close()
-          return
-        }
+        if (course.status === 'READY') await send('course_ready', { courseId: course.id })
+        else await send('course_failed', { courseId: course.id })
+        return
+      }
+
+      // Lock: se já há uma geração ativa para este curso, encerra silenciosamente
+      if (activeGenerations.has(course.id)) {
+        return
+      }
+      activeGenerations.add(course.id)
+
+      // Limpar lições anteriores para evitar duplicatas em retry
+      if (course.lessons.length > 0) {
+        await db.lesson.deleteMany({ where: { courseId: course.id } })
       }
 
       const levelLabel = { BEGINNER: 'Iniciante', INTERMEDIATE: 'Intermediário', ADVANCED: 'Avançado' }[course.level]
@@ -118,7 +130,8 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
       await db.course.update({ where: { id: course.id }, data: { status: 'FAILED' } })
       await send('course_failed', { error: String(err) })
     } finally {
-      await writer.close()
+      activeGenerations.delete(course.id)
+      await closeWriter()
     }
   }
 

@@ -6,7 +6,7 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
   const course = await db.course.findUnique({
     where: { id: params.id },
     include: {
-      lessons: { orderBy: { order: 'asc' }, select: { id: true, title: true, order: true, status: true } },
+      lessons: { orderBy: { order: 'asc' }, select: { id: true, title: true, order: true, status: true, content: true } },
       user: { select: { id: true, name: true, image: true } },
     },
   })

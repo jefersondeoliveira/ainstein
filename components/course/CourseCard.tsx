@@ -1,5 +1,6 @@
 // components/course/CourseCard.tsx
 import Link from 'next/link'
+import Image from 'next/image'
 import { LevelBadge } from '@/components/ui/LevelBadge'
 import { Level } from '@prisma/client'
 
@@ -19,7 +20,7 @@ export function CourseCard({ id, title, level, lessonCount, user }: CourseCardPr
       <h3 className="text-sm font-semibold text-text-primary leading-snug">{title}</h3>
       <p className="text-xs text-text-muted">{lessonCount} aulas · Quiz final</p>
       <div className="flex items-center gap-2 mt-auto pt-2">
-        {user.image && <img src={user.image} alt="" className="w-5 h-5 rounded-full" />}
+        {user.image && <Image src={user.image} alt="" width={20} height={20} className="w-5 h-5 rounded-full" />}
         <span className="text-xs text-text-muted">{user.name}</span>
       </div>
     </Link>

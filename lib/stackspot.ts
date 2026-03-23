@@ -57,8 +57,39 @@ export async function stackspotChat(prompt: string): Promise<ReadableStream<Uint
   return res.body
 }
 
+/** Mock para testes sem gastar tokens (MOCK=true no .env.local) */
+function mockResponse(prompt: string): string {
+  if (prompt.includes('outline')) {
+    return JSON.stringify({
+      title: 'Curso Mock: ' + prompt.match(/"([^"]+)"/)?.[1] ?? 'Tópico',
+      description: 'Curso gerado em modo mock para testes.',
+      lessons: [
+        { title: 'Introdução', description: 'Conceitos básicos.' },
+        { title: 'Fundamentos', description: 'Base teórica.' },
+        { title: 'Prática', description: 'Exemplos práticos.' },
+      ],
+    })
+  }
+  if (prompt.includes('múltipla escolha') || prompt.includes('Quiz')) {
+    return JSON.stringify([
+      { question: 'Pergunta mock 1?', options: ['A', 'B', 'C', 'D'], correctIndex: 0 },
+      { question: 'Pergunta mock 2?', options: ['A', 'B', 'C', 'D'], correctIndex: 1 },
+      { question: 'Pergunta mock 3?', options: ['A', 'B', 'C', 'D'], correctIndex: 2 },
+      { question: 'Pergunta mock 4?', options: ['A', 'B', 'C', 'D'], correctIndex: 3 },
+      { question: 'Pergunta mock 5?', options: ['A', 'B', 'C', 'D'], correctIndex: 0 },
+    ])
+  }
+  // Conteúdo de aula
+  const title = prompt.match(/"([^"]+)"/)?.[1] ?? 'Aula'
+  return `## ${title}\n\nEste é o conteúdo mock da aula **${title}**.\n\n### Conceitos principais\n\nLorem ipsum dolor sit amet, consectetur adipiscing elit.\n\n\`\`\`js\nconsole.log("Exemplo de código mock");\n\`\`\`\n\n### Resumo\n\nConteúdo gerado em modo mock para testes de UI.`
+}
+
 /** Coleta stream em texto completo */
 export async function stackspotChatText(prompt: string): Promise<string> {
+  if (process.env.MOCK === 'true') {
+    await new Promise(r => setTimeout(r, 300)) // simula latência
+    return mockResponse(prompt)
+  }
   const stream = await stackspotChat(prompt)
   const reader = stream.getReader()
   const decoder = new TextDecoder()
@@ -68,7 +99,7 @@ export async function stackspotChatText(prompt: string): Promise<string> {
     if (done) break
     result += decoder.decode(value, { stream: true })
   }
-  // Stackspot retorna SSE lines: "data: {...}\n\n"
+  // Stackspot retorna SSE lines: data: {"message": "...", ...}
   const chunks: string[] = []
   for (const line of result.split('\n')) {
     if (!line.startsWith('data:')) continue
@@ -76,8 +107,7 @@ export async function stackspotChatText(prompt: string): Promise<string> {
     if (payload === '[DONE]') break
     try {
       const obj = JSON.parse(payload)
-      if (obj.choices?.[0]?.delta?.content) chunks.push(obj.choices[0].delta.content)
-      if (typeof obj.text === 'string') chunks.push(obj.text)
+      if (typeof obj.message === 'string') chunks.push(obj.message)
     } catch { /* skip malformed */ }
   }
   return chunks.join('')
