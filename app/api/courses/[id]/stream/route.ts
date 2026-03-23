@@ -54,16 +54,15 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
         return
       }
 
-      // Lock: se já há uma geração ativa para este curso, encerra silenciosamente
+      // Lock em memória: evita geração concorrente (React StrictMode / EventSource reconnect)
       if (activeGenerations.has(course.id)) {
         return
       }
       activeGenerations.add(course.id)
 
-      // Limpar lições anteriores para evitar duplicatas em retry
-      if (course.lessons.length > 0) {
-        await db.lesson.deleteMany({ where: { courseId: course.id } })
-      }
+      // Limpar lições e quiz anteriores antes de gerar (evita duplicatas em retry)
+      await db.lesson.deleteMany({ where: { courseId: course.id } })
+      await db.quiz.deleteMany({ where: { courseId: course.id } })
 
       const levelLabel = { BEGINNER: 'Iniciante', INTERMEDIATE: 'Intermediário', ADVANCED: 'Avançado' }[course.level]
 
@@ -82,11 +81,13 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
       // Atualizar título do curso
       await db.course.update({ where: { id: course.id }, data: { title: outline.title } })
 
-      // Criar lições no banco
+      // Criar lições no banco (upsert = idempotente)
       const lessons = await Promise.all(
         outline.lessons.map((l, i) =>
-          db.lesson.create({
-            data: { courseId: course.id, title: l.title, order: i + 1, status: 'PENDING' },
+          db.lesson.upsert({
+            where: { courseId_order: { courseId: course.id, order: i + 1 } },
+            create: { courseId: course.id, title: l.title, order: i + 1, status: 'PENDING' },
+            update: { title: l.title, status: 'PENDING', content: null },
           })
         )
       )

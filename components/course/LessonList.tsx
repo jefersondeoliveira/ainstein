@@ -11,11 +11,17 @@ interface LessonListProps {
 }
 
 export function LessonList({ courseId, lessons, completedLessons = [], currentOrder }: LessonListProps) {
+  // Dedup by order — prefer READY over PENDING if duplicates exist
+  const unique = lessons
+    .sort((a, b) => (a.status === 'READY' ? -1 : 1) - (b.status === 'READY' ? -1 : 1))
+    .filter((l, _, arr) => arr.findIndex(x => x.order === l.order) === arr.indexOf(l))
+    .sort((a, b) => a.order - b.order)
+
   return (
     <aside className="w-52 min-w-[13rem] bg-base border-l border-subtle p-3 overflow-y-auto hidden sm:block scrollbar-hidden">
       <p className="text-[9px] uppercase tracking-widest text-text-muted mb-3">Aulas</p>
       <ul className="flex flex-col gap-0.5">
-        {lessons.map(lesson => {
+        {unique.map(lesson => {
           const done = completedLessons.includes(lesson.id)
           const active = lesson.order === currentOrder
           const pending = lesson.status === 'PENDING'

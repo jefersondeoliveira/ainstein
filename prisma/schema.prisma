@@ -81,6 +81,8 @@ model Lesson {
   content  String?
   order    Int
   status   LessonStatus @default(PENDING)
+
+  @@unique([courseId, order])
 }
 
 model Quiz {
