@@ -1,31 +1,44 @@
-// app/course/[id]/page.tsx
 'use client'
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { useSession } from 'next-auth/react'
-import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { Level } from '@prisma/client'
-import { Navbar } from '@/components/ui/Navbar'
-import { BottomNav } from '@/components/ui/BottomNav'
 import { Einstein } from '@/components/einstein/Einstein'
 import { LevelBadge } from '@/components/ui/LevelBadge'
 
-interface Lesson { id: string; title: string; order: number; status: string; content?: string }
+interface Lesson { id: string; title: string; order: number; status: string }
 interface Course {
   id: string; title: string; topic: string; level: Level; status: string
-  lessons: Lesson[]; user: { name: string | null; image: string | null }
+  lessons: Lesson[]
 }
+
+const MESSAGES = [
+  'Organizando os conceitos...',
+  'Escrevendo as aulas...',
+  'Preparando exemplos práticos...',
+  'Revisando o conteúdo...',
+  'Quase pronto...',
+]
 
 export default function CoursePage({ params }: { params: { id: string } }) {
   const [course, setCourse] = useState<Course | null>(null)
   const [lessons, setLessons] = useState<Lesson[]>([])
-  const [generating, setGenerating] = useState(false)
+  const [msgIndex, setMsgIndex] = useState(0)
   const [failed, setFailed] = useState(false)
+  const redirected = useRef(false)
 
   const { status: sessionStatus } = useSession()
+  const router = useRouter()
+
+  // Cycle through loading messages
+  useEffect(() => {
+    if (!course || course.status !== 'GENERATING') return
+    const t = setInterval(() => setMsgIndex(i => (i + 1) % MESSAGES.length), 2500)
+    return () => clearInterval(t)
+  }, [course])
 
   const startStream = useCallback(() => {
     if (sessionStatus !== 'authenticated') return
-    setGenerating(true)
     const es = new EventSource(`/api/courses/${params.id}/stream`)
 
     es.addEventListener('lesson_created', e => {
@@ -35,101 +48,115 @@ export default function CoursePage({ params }: { params: { id: string } }) {
         return [...prev, { ...lesson, status: 'PENDING' }].sort((a, b) => a.order - b.order)
       })
     })
+
     es.addEventListener('lesson_ready', e => {
-      const { id, content } = JSON.parse(e.data) as { id: string; content: string }
-      setLessons(prev => prev.map(l => l.id === id ? { ...l, status: 'READY', content } : l))
+      const { id } = JSON.parse(e.data) as { id: string }
+      setLessons(prev => {
+        const updated = prev.map(l => l.id === id ? { ...l, status: 'READY' } : l)
+        // Redirect to lesson 1 as soon as it's ready
+        const first = updated.find(l => l.order === 1 && l.status === 'READY')
+        if (first && !redirected.current) {
+          redirected.current = true
+          es.close()
+          router.replace(`/course/${params.id}/lesson/1?generating=1`)
+        }
+        return updated
+      })
     })
+
     es.addEventListener('course_ready', () => {
-      setGenerating(false)
       es.close()
+      if (!redirected.current) {
+        redirected.current = true
+        router.replace(`/course/${params.id}/lesson/1`)
+      }
     })
+
     es.addEventListener('course_failed', () => {
       setFailed(true)
-      setGenerating(false)
       es.close()
     })
+
     es.onerror = () => es.close()
-  }, [params.id, sessionStatus])
+    return es
+  }, [params.id, sessionStatus, router])
 
   useEffect(() => {
     fetch(`/api/courses/${params.id}`)
       .then(r => r.json())
       .then((c: Course) => {
         setCourse(c)
-        setLessons(c.lessons)
-        if (c.status === 'GENERATING') {
-          if (sessionStatus === 'authenticated') startStream()
+        if (c.status === 'READY') {
+          router.replace(`/course/${params.id}/lesson/1`)
+          return
         }
-        if (c.status === 'FAILED') setFailed(true)
+        if (c.status === 'FAILED') { setFailed(true); return }
+        setLessons(c.lessons)
+        if (sessionStatus === 'authenticated') startStream()
       })
-  }, [params.id, sessionStatus, startStream])
+  }, [params.id, sessionStatus, startStream, router])
 
   const handleRetry = async () => {
     await fetch(`/api/courses/${params.id}/retry`, { method: 'POST' })
     setFailed(false)
     setLessons([])
+    redirected.current = false
     startStream()
   }
 
+  // Loading before course data arrives
   if (!course) return (
-    <div className="min-h-screen bg-base flex items-center justify-center">
-      <div className="text-text-muted text-sm">Carregando...</div>
+    <div className="min-h-screen bg-base flex flex-col items-center justify-center gap-6">
+      <Einstein state="thinking" size={100} />
+      <p className="text-text-muted text-sm animate-pulse">Carregando...</p>
     </div>
   )
 
-  return (
-    <>
-      <Navbar />
-      <main className="min-h-screen bg-base pb-20 sm:pb-0">
-        <div className="max-w-2xl mx-auto px-4 py-8">
-          <div className="flex items-start gap-6 mb-8">
-            <Einstein state={generating ? 'thinking' : 'idle'} size={80} />
-            <div className="flex-1">
-              <LevelBadge level={course.level} />
-              <h1 className="text-xl font-bold text-text-primary mt-2 mb-1">{course.title}</h1>
-              <p className="text-xs text-text-muted">{course.topic}</p>
-              {generating && <p className="text-xs text-accent mt-2 animate-pulse">Einstein está preparando o curso...</p>}
-              {failed && (
-                <div className="mt-3 flex items-center gap-3">
-                  <p className="text-xs text-red-400">Falha na geração.</p>
-                  <button onClick={handleRetry} className="text-xs text-accent border border-accent/30 px-3 py-1 rounded-lg">Tentar novamente</button>
-                </div>
-              )}
-            </div>
-          </div>
+  if (failed) return (
+    <div className="min-h-screen bg-base flex flex-col items-center justify-center gap-6 px-6 text-center">
+      <Einstein state="idle" size={90} />
+      <div>
+        <p className="text-text-primary font-semibold mb-1">Algo deu errado</p>
+        <p className="text-text-muted text-sm mb-5">Einstein não conseguiu gerar o curso.</p>
+        <button onClick={handleRetry} className="bg-accent text-base text-sm font-semibold px-5 py-2.5 rounded-xl">
+          Tentar novamente
+        </button>
+      </div>
+    </div>
+  )
 
-          <div className="flex flex-col gap-2">
-            <p className="text-[11px] uppercase tracking-widest text-text-muted mb-2">
-              {lessons.length} aulas {generating ? '(gerando...)' : ''}
-            </p>
-            {lessons.map(lesson => (
-              <Link
-                key={lesson.id}
-                href={lesson.status === 'READY' ? `/course/${params.id}/lesson/${lesson.order}` : '#'}
-                className={`flex items-center gap-3 bg-raised border border-subtle rounded-xl px-4 py-3 transition-colors ${
-                  lesson.status === 'READY' ? 'hover:border-accent/20' : 'opacity-50 pointer-events-none'
-                }`}
-              >
-                <span className="w-7 h-7 rounded-full border border-subtle flex items-center justify-center text-xs text-text-muted flex-shrink-0">
-                  {lesson.order}
+  // Generation screen
+  return (
+    <div className="min-h-screen bg-base flex flex-col items-center justify-center gap-8 px-6">
+      <div className="flex flex-col items-center gap-2 text-center max-w-xs">
+        <LevelBadge level={course.level} />
+        <h1 className="text-lg font-bold text-text-primary mt-1">{course.title}</h1>
+        <p className="text-xs text-text-muted">{course.topic}</p>
+      </div>
+
+      <Einstein state="thinking" size={120} />
+
+      <div className="flex flex-col items-center gap-3 text-center">
+        <p className="text-accent text-sm font-medium animate-pulse">
+          {MESSAGES[msgIndex]}
+        </p>
+        {lessons.length > 0 && (
+          <div className="flex flex-col gap-1.5 w-64">
+            {lessons.map(l => (
+              <div key={l.id} className="flex items-center gap-2">
+                <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
+                  l.status === 'READY' ? 'bg-accent' : 'bg-accent/30 animate-pulse'
+                }`} />
+                <span className={`text-xs truncate ${
+                  l.status === 'READY' ? 'text-text-secondary' : 'text-text-muted'
+                }`}>
+                  {l.status === 'PENDING' ? 'Gerando...' : l.title}
                 </span>
-                <span className="text-sm text-text-secondary">
-                  {lesson.status === 'PENDING' ? <span className="animate-pulse">Gerando aula...</span> : lesson.title}
-                </span>
-              </Link>
+              </div>
             ))}
           </div>
-
-          {course.status === 'READY' && (
-            <div className="mt-6">
-              <Link href={`/course/${params.id}/test`} className="block w-full text-center bg-accent text-base font-semibold py-3 rounded-xl text-sm">
-                Fazer quiz final →
-              </Link>
-            </div>
-          )}
-        </div>
-      </main>
-      <BottomNav />
-    </>
+        )}
+      </div>
+    </div>
   )
 }

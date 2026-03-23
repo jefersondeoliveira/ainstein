@@ -1,6 +1,6 @@
-// app/course/[id]/lesson/[order]/page.tsx
 'use client'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Navbar } from '@/components/ui/Navbar'
 import { BottomNav } from '@/components/ui/BottomNav'
@@ -9,22 +9,69 @@ import { LessonList } from '@/components/course/LessonList'
 import { LessonContent } from '@/components/course/LessonContent'
 
 interface Lesson { id: string; title: string; order: number; status: string; content?: string }
-interface Course { id: string; title: string; lessons: Lesson[] }
+interface Course { id: string; title: string; lessons: Lesson[]; status: string }
 
 export default function LessonPage({ params }: { params: { id: string; order: string } }) {
   const order = parseInt(params.order)
+  const searchParams = useSearchParams()
+  const isGenerating = searchParams.get('generating') === '1'
+
   const [course, setCourse] = useState<Course | null>(null)
+  const [lessons, setLessons] = useState<Lesson[]>([])
   const [lesson, setLesson] = useState<Lesson | null>(null)
+  const [generating, setGenerating] = useState(isGenerating)
   const [isTyping, setIsTyping] = useState(false)
   const [completed, setCompleted] = useState<string[]>([])
+
+  // Keep sidebar updated from SSE during generation
+  const attachStream = useCallback((courseId: string) => {
+    const es = new EventSource(`/api/courses/${courseId}/stream`)
+
+    es.addEventListener('lesson_created', e => {
+      const l = JSON.parse(e.data) as Lesson
+      setLessons(prev => {
+        if (prev.find(x => x.id === l.id)) return prev
+        return [...prev, { ...l, status: 'PENDING' }].sort((a, b) => a.order - b.order)
+      })
+    })
+
+    es.addEventListener('lesson_ready', e => {
+      const { id, content } = JSON.parse(e.data) as { id: string; content: string }
+      setLessons(prev => prev.map(l => l.id === id ? { ...l, status: 'READY', content } : l))
+      // Update current lesson content if it just became ready
+      setLesson(prev => prev?.id === id ? { ...prev, status: 'READY', content } : prev)
+    })
+
+    es.addEventListener('course_ready', () => {
+      setGenerating(false)
+      es.close()
+    })
+
+    es.addEventListener('course_failed', () => {
+      setGenerating(false)
+      es.close()
+    })
+
+    es.onerror = () => { setGenerating(false); es.close() }
+    return es
+  }, [])
 
   useEffect(() => {
     fetch(`/api/courses/${params.id}`)
       .then(r => r.json())
       .then((c: Course) => {
         setCourse(c)
-        const l = c.lessons.find((x: Lesson) => x.order === order)
-        setLesson(l ?? null)
+        setLessons(c.lessons)
+        const l = c.lessons.find((x: Lesson) => x.order === order) ?? null
+        setLesson(l)
+
+        if (c.status === 'GENERATING') {
+          setGenerating(true)
+          const es = attachStream(params.id)
+          return () => es.close()
+        }
+
+        // Poll if this specific lesson is still pending
         if (l?.status === 'PENDING') {
           const interval = setInterval(async () => {
             const r2 = await fetch(`/api/courses/${params.id}`)
@@ -32,13 +79,14 @@ export default function LessonPage({ params }: { params: { id: string; order: st
             const l2 = c2.lessons.find((x: Lesson) => x.order === order)
             if (l2?.status === 'READY') {
               setLesson(l2)
+              setLessons(c2.lessons)
               clearInterval(interval)
             }
           }, 3000)
           return () => clearInterval(interval)
         }
       })
-  }, [params.id, order])
+  }, [params.id, order, attachStream])
 
   const markComplete = async () => {
     if (!lesson || completed.includes(lesson.id)) return
@@ -51,29 +99,42 @@ export default function LessonPage({ params }: { params: { id: string; order: st
   }
 
   if (!course || !lesson) return (
-    <div className="min-h-screen bg-base flex items-center justify-center">
-      <Einstein state="thinking" size={80} />
+    <div className="min-h-screen bg-base flex flex-col items-center justify-center gap-4">
+      <Einstein state="thinking" size={90} />
+      <p className="text-text-muted text-sm animate-pulse">Einstein está preparando a aula...</p>
     </div>
   )
 
-  const prevLesson = course.lessons.find((l: Lesson) => l.order === order - 1)
-  const nextLesson = course.lessons.find((l: Lesson) => l.order === order + 1)
+  const prevLesson = lessons.find(l => l.order === order - 1)
+  const nextLesson = lessons.find(l => l.order === order + 1 && l.status === 'READY')
 
   return (
     <>
       <Navbar />
       <div className="flex h-[calc(100vh-48px)] bg-base">
+        {/* Einstein sidebar */}
         <aside className="hidden sm:flex w-44 min-w-[11rem] flex-col items-center bg-surface border-r border-subtle p-4 gap-3">
           <p className="text-[9px] uppercase tracking-widest text-text-muted">Einstein</p>
-          <Einstein state={isTyping ? 'talking' : lesson.status === 'PENDING' ? 'thinking' : 'idle'} size={100} />
-          <p className="text-[10px] text-accent text-center">{isTyping ? 'Explicando...' : 'Pronto'}</p>
+          <Einstein
+            state={generating ? 'thinking' : isTyping ? 'talking' : 'idle'}
+            size={100}
+          />
+          <p className="text-[10px] text-accent text-center">
+            {generating ? 'Criando curso...' : isTyping ? 'Explicando...' : 'Pronto'}
+          </p>
+          {generating && (
+            <p className="text-[9px] text-text-muted text-center animate-pulse">
+              Outras aulas sendo geradas
+            </p>
+          )}
         </aside>
 
         <main className="flex-1 flex flex-col overflow-hidden">
+          {/* Mobile Einstein bar */}
           <div className="sm:hidden flex items-center gap-3 bg-surface border-b border-subtle p-3">
-            <Einstein state={isTyping ? 'talking' : 'idle'} size={44} />
+            <Einstein state={generating ? 'thinking' : isTyping ? 'talking' : 'idle'} size={44} />
             <div className="flex-1 text-xs text-text-secondary leading-relaxed line-clamp-2">
-              {isTyping ? 'Einstein está explicando...' : lesson.title}
+              {generating ? 'Einstein está criando o curso...' : isTyping ? 'Einstein está explicando...' : lesson.title}
             </div>
           </div>
 
@@ -82,7 +143,10 @@ export default function LessonPage({ params }: { params: { id: string; order: st
               Aula {order} — {lesson.title}
             </h1>
             {lesson.status === 'PENDING' ? (
-              <div className="animate-pulse text-text-muted text-sm">Einstein está preparando esta aula...</div>
+              <div className="flex flex-col items-center gap-4 py-12">
+                <Einstein state="thinking" size={70} />
+                <p className="text-text-muted text-sm animate-pulse">Einstein está preparando esta aula...</p>
+              </div>
             ) : (
               <LessonContent content={lesson.content ?? ''} onTypingChange={setIsTyping} />
             )}
@@ -106,17 +170,19 @@ export default function LessonPage({ params }: { params: { id: string; order: st
               <Link href={`/course/${params.id}/lesson/${nextLesson.order}`} className="bg-accent text-base text-xs font-bold px-4 py-2 rounded-lg">
                 Próxima →
               </Link>
-            ) : (
+            ) : course.status === 'READY' ? (
               <Link href={`/course/${params.id}/test`} className="bg-accent text-base text-xs font-bold px-4 py-2 rounded-lg">
                 Quiz →
               </Link>
+            ) : (
+              <span className="text-xs text-text-muted px-4 py-2 animate-pulse">Gerando...</span>
             )}
           </div>
         </main>
 
         <LessonList
           courseId={params.id}
-          lessons={course.lessons}
+          lessons={lessons}
           completedLessons={completed}
           currentOrder={order}
         />

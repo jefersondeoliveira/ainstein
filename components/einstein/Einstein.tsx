@@ -147,10 +147,30 @@ export function Einstein({ state = 'idle', size = 160 }: EinsteinProps) {
         </div>
       )}
 
+      {/* Thinking bubbles */}
+      {state === 'thinking' && (<>
+        <div className="absolute text-accent/70 text-xs font-bold" style={{ top: '8%', left: '-10%', animation: 'bubble1 2.2s ease-in-out infinite' }}>?</div>
+        <div className="absolute text-accent/50 text-[10px] font-bold" style={{ top: '20%', left: '-18%', animation: 'bubble2 2.8s ease-in-out infinite 0.4s' }}>∑</div>
+        <div className="absolute text-accent/60 text-xs font-bold" style={{ top: '5%', right: '-14%', animation: 'bubble3 2s ease-in-out infinite 0.8s' }}>∞</div>
+        <div className="absolute text-accent/40 text-[9px]" style={{ top: '30%', right: '-20%', animation: 'bubble1 3s ease-in-out infinite 1.2s' }}>π</div>
+      </>)}
+
       <style>{`
         @keyframes float {
           0%,100% { transform: translateY(0) rotate(-3deg); opacity: 0.7; }
           50% { transform: translateY(-8px) rotate(3deg); opacity: 1; }
+        }
+        @keyframes bubble1 {
+          0%,100% { transform: translateY(0) scale(1); opacity: 0.6; }
+          50% { transform: translateY(-12px) scale(1.15); opacity: 1; }
+        }
+        @keyframes bubble2 {
+          0%,100% { transform: translateY(0) rotate(-5deg); opacity: 0.4; }
+          50% { transform: translateY(-10px) rotate(5deg); opacity: 0.8; }
+        }
+        @keyframes bubble3 {
+          0%,100% { transform: translateY(0) scale(0.9); opacity: 0.5; }
+          50% { transform: translateY(-14px) scale(1.1); opacity: 0.9; }
         }
       `}</style>
     </div>
