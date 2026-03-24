@@ -11,6 +11,8 @@ export async function DELETE(_req: NextRequest, { params }: { params: { id: stri
   if (!course) return NextResponse.json({ error: 'Not found' }, { status: 404 })
   if (course.userId !== session.user.id) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
+  // Delete dependents not covered by cascade
+  await db.userProgress.deleteMany({ where: { courseId: params.id } })
   await db.course.delete({ where: { id: params.id } })
   return NextResponse.json({ ok: true })
 }
