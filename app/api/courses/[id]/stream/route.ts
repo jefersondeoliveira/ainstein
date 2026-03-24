@@ -6,8 +6,9 @@ import { stackspotChatText } from '@/lib/stackspot'
 
 export const maxDuration = 300
 
-// Lock em memória: evita geração concorrente do mesmo curso (React StrictMode abre 2 streams)
-const activeGenerations = new Set<string>()
+// Lock em memória: courseId → timestamp de início (detecta locks travados)
+const activeGenerations = new Map<string, number>()
+const LOCK_TTL_MS = 8 * 60 * 1000 // 8 min — após isso, considera lock morto
 
 function sseEvent(event: string, data: unknown): string {
   return `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`
@@ -63,11 +64,26 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
       }
 
       // Lock em memória: evita geração concorrente (React StrictMode / EventSource reconnect)
-      // claimedLock garante que só quem adicionou ao Set vai removê-lo no finally
-      if (activeGenerations.has(course.id)) {
+      // Se o lock existe mas é antigo (> LOCK_TTL_MS), considera morto e assume
+      const lockStart = activeGenerations.get(course.id)
+      const lockIsStale = lockStart !== undefined && Date.now() - lockStart > LOCK_TTL_MS
+
+      if (lockStart !== undefined && !lockIsStale) {
+        // Outra geração em andamento — envia estado atual do DB como catchup e encerra
+        const current = await db.course.findUnique({
+          where: { id: course.id },
+          include: { lessons: { orderBy: { order: 'asc' } } },
+        })
+        for (const l of current?.lessons ?? []) {
+          await send('lesson_created', { id: l.id, title: l.title, order: l.order })
+          if (l.status === 'READY' && l.content) {
+            await send('lesson_ready', { id: l.id, content: l.content })
+          }
+        }
         return
       }
-      activeGenerations.add(course.id)
+
+      activeGenerations.set(course.id, Date.now())
       claimedLock = true
 
       // Manter lições READY (resume), remover apenas PENDING e quiz antigo

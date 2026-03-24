@@ -36,25 +36,34 @@ export async function getStackspotToken(): Promise<string> {
   return refreshPromise
 }
 
+const STACKSPOT_TIMEOUT_MS = 90_000 // 90s — abort se a API travar
+
 export async function stackspotChat(prompt: string): Promise<ReadableStream<Uint8Array>> {
   const token = await getStackspotToken()
-  const res = await fetch(AGENT_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify({
-      streaming: true,
-      user_prompt: prompt,
-      stackspot_knowledge: false,
-      return_ks_in_response: false,
-      deep_search_ks: false,
-    }),
-  })
-  if (!res.ok) throw new Error(`Stackspot chat failed: ${res.status}`)
-  if (!res.body) throw new Error('No response body')
-  return res.body
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), STACKSPOT_TIMEOUT_MS)
+  try {
+    const res = await fetch(AGENT_URL, {
+      method: 'POST',
+      signal: controller.signal,
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        streaming: true,
+        user_prompt: prompt,
+        stackspot_knowledge: false,
+        return_ks_in_response: false,
+        deep_search_ks: false,
+      }),
+    })
+    if (!res.ok) throw new Error(`Stackspot chat failed: ${res.status}`)
+    if (!res.body) throw new Error('No response body')
+    return res.body
+  } finally {
+    clearTimeout(timer)
+  }
 }
 
 /** Mock para testes sem gastar tokens (MOCK=true no .env.local) */
