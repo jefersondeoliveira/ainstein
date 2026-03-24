@@ -47,6 +47,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
   }
 
   const runGeneration = async () => {
+    let claimedLock = false
     try {
       // Catchup: curso finalizado — replay estado atual e encerra
       if (course.status === 'READY' || course.status === 'FAILED') {
@@ -62,10 +63,12 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
       }
 
       // Lock em memória: evita geração concorrente (React StrictMode / EventSource reconnect)
+      // claimedLock garante que só quem adicionou ao Set vai removê-lo no finally
       if (activeGenerations.has(course.id)) {
         return
       }
       activeGenerations.add(course.id)
+      claimedLock = true
 
       // Limpar lições e quiz anteriores antes de gerar (evita duplicatas em retry)
       await db.lesson.deleteMany({ where: { courseId: course.id } })
@@ -135,10 +138,12 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
       await send('course_ready', { courseId: course.id })
     } catch (err) {
       console.error('Generation error:', err)
-      await db.course.update({ where: { id: course.id }, data: { status: 'FAILED' } })
-      await send('course_failed', { error: String(err) })
+      if (claimedLock) {
+        await db.course.update({ where: { id: course.id }, data: { status: 'FAILED' } }).catch(() => {})
+        await send('course_failed', { error: String(err) })
+      }
     } finally {
-      activeGenerations.delete(course.id)
+      if (claimedLock) activeGenerations.delete(course.id)
       await closeWriter()
     }
   }
