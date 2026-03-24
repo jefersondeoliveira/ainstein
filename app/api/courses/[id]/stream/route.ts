@@ -32,11 +32,18 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 
   let writerClosed = false
   const closeWriter = async () => {
-    if (!writerClosed) { writerClosed = true; await writer.close() }
+    if (writerClosed) return
+    writerClosed = true
+    try { await writer.close() } catch { /* client already disconnected */ }
   }
 
   const send = async (event: string, data: unknown) => {
-    if (!writerClosed) await writer.write(encoder.encode(sseEvent(event, data)))
+    if (writerClosed) return
+    try {
+      await writer.write(encoder.encode(sseEvent(event, data)))
+    } catch {
+      writerClosed = true // mark closed so future sends are no-ops
+    }
   }
 
   const runGeneration = async () => {
