@@ -8,7 +8,8 @@ import { Einstein } from '@/components/einstein/Einstein'
 import { LevelBadge } from '@/components/ui/LevelBadge'
 import { useGeneration } from '@/app/GenerationProvider'
 
-interface Course { id: string; title: string; topic: string; level: Level; status: string }
+interface Lesson { id: string; title: string; order: number; status: string; content?: string }
+interface Course { id: string; title: string; topic: string; level: Level; status: string; lessons: Lesson[] }
 
 const MESSAGES = [
   'Organizando os conceitos...',
@@ -53,7 +54,13 @@ export default function CoursePage({ params }: { params: { id: string } }) {
           Notification.requestPermission()
         }
 
-        startTracking(params.id, c.title || c.topic)
+        const lesson1Ready = c.lessons?.some((l: Lesson) => l.order === 1 && l.status === 'READY')
+        startTracking(params.id, c.title || c.topic, c.lessons ?? [])
+
+        // If lesson 1 already done, go straight to it without showing generation screen
+        if (lesson1Ready) {
+          router.replace(`/course/${params.id}/lesson/1`)
+        }
       })
   }, [params.id, sessionStatus, isThisCourse, startTracking, router])
 

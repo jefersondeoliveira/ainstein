@@ -13,7 +13,7 @@ export interface ActiveGeneration {
 
 interface GenerationContextValue {
   generation: ActiveGeneration | null
-  startTracking: (courseId: string, courseTitle: string) => void
+  startTracking: (courseId: string, courseTitle: string, initialLessons?: Lesson[]) => void
   dismiss: () => void
 }
 
@@ -35,12 +35,15 @@ export function GenerationProvider({ children }: { children: ReactNode }) {
     notifiedRef.current = false
   }, [])
 
-  const startTracking = useCallback((courseId: string, courseTitle: string) => {
+  const startTracking = useCallback((courseId: string, courseTitle: string, initialLessons: Lesson[] = []) => {
     // Close any existing stream for a different course
     if (esRef.current) { esRef.current.close(); esRef.current = null }
     notifiedRef.current = false
 
-    setGeneration({ courseId, courseTitle, lessons: [], firstReady: false, failed: false })
+    const firstReady = initialLessons.some(l => l.order === 1 && l.status === 'READY')
+    if (firstReady) notifiedRef.current = true // already notified in previous session
+
+    setGeneration({ courseId, courseTitle, lessons: initialLessons, firstReady, failed: false })
 
     const es = new EventSource(`/api/courses/${courseId}/stream`)
     esRef.current = es
