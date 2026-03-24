@@ -70,17 +70,17 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
       activeGenerations.add(course.id)
       claimedLock = true
 
-      // Limpar lições e quiz anteriores antes de gerar (evita duplicatas em retry)
-      await db.lesson.deleteMany({ where: { courseId: course.id } })
+      // Manter lições READY (resume), remover apenas PENDING e quiz antigo
+      await db.lesson.deleteMany({ where: { courseId: course.id, status: 'PENDING' } })
       await db.quiz.deleteMany({ where: { courseId: course.id } })
 
       const levelLabel = { BEGINNER: 'Iniciante', INTERMEDIATE: 'Intermediário', ADVANCED: 'Avançado' }[course.level]
 
-      // FASE 1: Outline
-      const outlinePrompt = `Crie um outline para um curso completo sobre "${course.topic}" para nível ${levelLabel}.\nRetorne SOMENTE JSON válido no formato: { "title": string, "description": string, "lessons": [{ "title": string, "description": string }] }\nNão inclua markdown, apenas o JSON.`
+      // FASE 1: Outline — 5 aulas para ser mais rápido
+      const outlinePrompt = `Crie um outline para um curso com exatamente 5 aulas sobre "${course.topic}" para nível ${levelLabel}.\nRetorne SOMENTE JSON válido no formato: { "title": string, "lessons": [{ "title": string, "description": string }] }\nNão inclua markdown, apenas o JSON.`
       const outlineRaw = await stackspotChatText(outlinePrompt)
 
-      let outline: { title: string; description: string; lessons: { title: string; description: string }[] }
+      let outline: { title: string; lessons: { title: string; description: string }[] }
       try {
         const jsonMatch = outlineRaw.match(/\{[\s\S]*\}/)
         outline = JSON.parse(jsonMatch?.[0] ?? outlineRaw)
@@ -91,24 +91,30 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
       // Atualizar título do curso
       await db.course.update({ where: { id: course.id }, data: { title: outline.title } })
 
-      // Criar lições no banco (upsert = idempotente)
+      // Upsert lições — NÃO sobrescreve status se já READY (resume)
       const lessons = await Promise.all(
         outline.lessons.map((l, i) =>
           db.lesson.upsert({
             where: { courseId_order: { courseId: course.id, order: i + 1 } },
             create: { courseId: course.id, title: l.title, order: i + 1, status: 'PENDING' },
-            update: { title: l.title, status: 'PENDING', content: null },
+            update: { title: l.title }, // mantém status READY se já existir
           })
         )
       )
 
       for (const lesson of lessons) {
         await send('lesson_created', { id: lesson.id, title: lesson.title, order: lesson.order })
+        // Replay conteúdo já pronto
+        if (lesson.status === 'READY' && lesson.content) {
+          await send('lesson_ready', { id: lesson.id, content: lesson.content })
+        }
       }
 
-      // FASE 2: Conteúdo de cada aula
+      // FASE 2: Conteúdo apenas das aulas ainda PENDING
       for (const lesson of lessons) {
-        const lessonPrompt = `Escreva o conteúdo completo da aula "${lesson.title}" do curso "${course.topic}" para nível ${levelLabel}.\nUse markdown. Inclua exemplos de código quando aplicável.\nEscreva de forma didática e progressiva. Máximo 800 palavras.`
+        if (lesson.status === 'READY') continue // pula aulas já prontas
+
+        const lessonPrompt = `Escreva o conteúdo da aula "${lesson.title}" do curso "${course.topic}" (nível ${levelLabel}).\nUse markdown com exemplos de código quando aplicável.\nSeja didático e direto. Máximo 350 palavras.`
         const content = await stackspotChatText(lessonPrompt)
 
         await db.lesson.update({
