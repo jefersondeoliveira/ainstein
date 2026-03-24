@@ -59,13 +59,15 @@ export function Navbar() {
                   : `Gerando... ${generation.lessons.filter(l => l.status === 'READY').length}/${generation.lessons.length} aulas`}
               </p>
             </div>
-            {generation.firstReady && !generation.failed && (
+            {!generation.failed && (
               <Link
-                href={`/course/${generation.courseId}/lesson/1`}
-                onClick={dismiss}
-                className="bg-accent text-base text-[10px] font-bold px-3 py-1.5 rounded-lg flex-shrink-0"
+                href={generation.firstReady
+                  ? `/course/${generation.courseId}/lesson/1`
+                  : `/course/${generation.courseId}`}
+                onClick={generation.firstReady ? dismiss : undefined}
+                className="bg-accent text-base text-[10px] font-bold px-3 py-1.5 rounded-lg flex-shrink-0 whitespace-nowrap"
               >
-                Começar →
+                {generation.firstReady ? 'Começar →' : 'Ver →'}
               </Link>
             )}
             <button onClick={dismiss} className="text-text-muted hover:text-text-secondary text-xs flex-shrink-0 ml-1">✕</button>
