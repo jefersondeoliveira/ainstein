@@ -2,18 +2,22 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { useSession, signOut } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
 
 export function Navbar() {
   const { data: session } = useSession()
+  const router = useRouter()
+
+  const goHome = () => { router.push('/'); router.refresh() }
 
   return (
     <nav className="sticky top-0 z-50 bg-surface border-b border-subtle h-12 flex items-center px-4 sm:px-6 gap-4">
-      <Link href="/" className="text-lg font-bold text-accent">
+      <button onClick={goHome} className="text-lg font-bold text-accent">
         AI<span className="text-text-primary">.nstein</span>
-      </Link>
+      </button>
 
       <div className="hidden sm:flex gap-5 flex-1">
-        <Link href="/" className="text-sm text-text-muted hover:text-text-secondary transition-colors">Explorar</Link>
+        <button onClick={goHome} className="text-sm text-text-muted hover:text-text-secondary transition-colors">Explorar</button>
         {session && (
           <Link href="/my-courses" className="text-sm text-text-muted hover:text-text-secondary transition-colors">Meus cursos</Link>
         )}

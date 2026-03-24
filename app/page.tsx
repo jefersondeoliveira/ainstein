@@ -1,27 +1,23 @@
 // app/page.tsx
-import { Level } from '@prisma/client'
 import { Navbar } from '@/components/ui/Navbar'
 import { BottomNav } from '@/components/ui/BottomNav'
 import { CourseGenerationForm } from '@/components/course/CourseGenerationForm'
 import { CourseCard } from '@/components/course/CourseCard'
+import { db } from '@/lib/db'
 
-interface CourseItem {
-  id: string
-  title: string
-  level: Level
-  _count: { lessons: number }
-  user: { name: string | null; image: string | null }
-  createdAt: string
-}
-
-async function getCourses(): Promise<{ courses: CourseItem[]; nextCursor: string | null }> {
-  const res = await fetch(`${process.env.NEXTAUTH_URL}/api/courses`, { cache: 'no-store' })
-  if (!res.ok) return { courses: [], nextCursor: null }
-  return res.json()
-}
+export const dynamic = 'force-dynamic'
 
 export default async function HomePage() {
-  const { courses } = await getCourses()
+  const courses = await db.course.findMany({
+    take: 12,
+    orderBy: { createdAt: 'desc' },
+    where: { status: 'READY' },
+    select: {
+      id: true, title: true, topic: true, level: true, createdAt: true,
+      _count: { select: { lessons: true } },
+      user: { select: { id: true, name: true, image: true } },
+    },
+  }).catch(() => [])
 
   return (
     <>
@@ -42,7 +38,7 @@ export default async function HomePage() {
               <p className="text-text-muted text-sm text-center py-8">Nenhum curso ainda. Seja o primeiro!</p>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {courses.map((c: CourseItem) => (
+                {courses.map((c) => (
                   <CourseCard
                     key={c.id}
                     id={c.id}
