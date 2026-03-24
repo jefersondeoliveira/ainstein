@@ -1,92 +1,54 @@
 'use client'
-import { useEffect, useState, useCallback } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Navbar } from '@/components/ui/Navbar'
 import { BottomNav } from '@/components/ui/BottomNav'
 import { Einstein } from '@/components/einstein/Einstein'
 import { LessonList } from '@/components/course/LessonList'
 import { LessonContent } from '@/components/course/LessonContent'
+import { useGeneration } from '@/app/GenerationProvider'
 
 interface Lesson { id: string; title: string; order: number; status: string; content?: string }
 interface Course { id: string; title: string; lessons: Lesson[]; status: string }
 
 export default function LessonPage({ params }: { params: { id: string; order: string } }) {
   const order = parseInt(params.order)
-  const searchParams = useSearchParams()
-  const isGenerating = searchParams.get('generating') === '1'
 
   const [course, setCourse] = useState<Course | null>(null)
-  const [lessons, setLessons] = useState<Lesson[]>([])
+  const [dbLessons, setDbLessons] = useState<Lesson[]>([])
   const [lesson, setLesson] = useState<Lesson | null>(null)
-  const [generating, setGenerating] = useState(isGenerating)
   const [isTyping, setIsTyping] = useState(false)
   const [completed, setCompleted] = useState<string[]>([])
 
-  // Keep sidebar updated from SSE during generation
-  const attachStream = useCallback((courseId: string) => {
-    const es = new EventSource(`/api/courses/${courseId}/stream`)
+  // Live generation state from global context (no new EventSource opened here)
+  const { generation } = useGeneration()
+  const isThisCourse = generation?.courseId === params.id
+  const generating = isThisCourse && !generation?.firstReady && !generation?.failed
 
-    es.addEventListener('lesson_created', e => {
-      const l = JSON.parse(e.data) as Lesson
-      setLessons(prev => {
-        if (prev.find(x => x.id === l.id)) return prev
-        return [...prev, { ...l, status: 'PENDING' }].sort((a, b) => a.order - b.order)
-      })
-    })
+  // Merge DB lessons with live context lessons
+  const liveLessons = isThisCourse ? generation!.lessons : []
+  const lessons: Lesson[] = liveLessons.length > 0 ? liveLessons : dbLessons
 
-    es.addEventListener('lesson_ready', e => {
-      const { id, content } = JSON.parse(e.data) as { id: string; content: string }
-      setLessons(prev => prev.map(l => l.id === id ? { ...l, status: 'READY', content } : l))
-      // Update current lesson content if it just became ready
-      setLesson(prev => prev?.id === id ? { ...prev, status: 'READY', content } : prev)
-    })
+  // Update current lesson from live context when it becomes ready
+  useEffect(() => {
+    if (!isThisCourse || !generation) return
+    const live = generation.lessons.find(l => l.order === order)
+    if (live?.status === 'READY' && lesson?.status !== 'READY') {
+      setLesson(live)
+    }
+  }, [isThisCourse, generation, order, lesson?.status])
 
-    es.addEventListener('course_ready', () => {
-      setGenerating(false)
-      es.close()
-    })
-
-    es.addEventListener('course_failed', () => {
-      setGenerating(false)
-      es.close()
-    })
-
-    es.onerror = () => { setGenerating(false); es.close() }
-    return es
-  }, [])
-
+  // Initial fetch
   useEffect(() => {
     fetch(`/api/courses/${params.id}`)
       .then(r => r.json())
       .then((c: Course) => {
         setCourse(c)
-        setLessons(c.lessons)
+        setDbLessons(c.lessons)
         const l = c.lessons.find((x: Lesson) => x.order === order) ?? null
         setLesson(l)
-
-        if (c.status === 'GENERATING') {
-          setGenerating(true)
-          const es = attachStream(params.id)
-          return () => es.close()
-        }
-
-        // Poll if this specific lesson is still pending
-        if (l?.status === 'PENDING') {
-          const interval = setInterval(async () => {
-            const r2 = await fetch(`/api/courses/${params.id}`)
-            const c2 = await r2.json() as Course
-            const l2 = c2.lessons.find((x: Lesson) => x.order === order)
-            if (l2?.status === 'READY') {
-              setLesson(l2)
-              setLessons(c2.lessons)
-              clearInterval(interval)
-            }
-          }, 3000)
-          return () => clearInterval(interval)
-        }
       })
-  }, [params.id, order, attachStream])
+  }, [params.id, order])
 
   const markComplete = async () => {
     if (!lesson || completed.includes(lesson.id)) return
@@ -107,6 +69,7 @@ export default function LessonPage({ params }: { params: { id: string; order: st
 
   const prevLesson = lessons.find(l => l.order === order - 1)
   const nextLesson = lessons.find(l => l.order === order + 1 && l.status === 'READY')
+  const courseReady = course.status === 'READY' || (isThisCourse && generation?.firstReady && !generating)
 
   return (
     <>
@@ -170,7 +133,7 @@ export default function LessonPage({ params }: { params: { id: string; order: st
               <Link href={`/course/${params.id}/lesson/${nextLesson.order}`} className="bg-accent text-base text-xs font-bold px-4 py-2 rounded-lg">
                 Próxima →
               </Link>
-            ) : course.status === 'READY' ? (
+            ) : courseReady ? (
               <Link href={`/course/${params.id}/test`} className="bg-accent text-base text-xs font-bold px-4 py-2 rounded-lg">
                 Quiz →
               </Link>
