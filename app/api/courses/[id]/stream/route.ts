@@ -104,8 +104,9 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
         throw new Error('Outline JSON inválido')
       }
 
-      // Atualizar título do curso
-      await db.course.update({ where: { id: course.id }, data: { title: outline.title } })
+      // Atualizar título do curso (se o curso foi deletado enquanto gerava, aborta silenciosamente)
+      const updated = await db.course.updateMany({ where: { id: course.id }, data: { title: outline.title } })
+      if (updated.count === 0) return // curso deletado — encerra sem erro
 
       // Upsert lições — NÃO sobrescreve status se já READY (resume)
       const lessons = await Promise.all(
@@ -133,10 +134,11 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
         const lessonPrompt = `Escreva o conteúdo da aula "${lesson.title}" do curso "${course.topic}" (nível ${levelLabel}).\nUse markdown com exemplos de código quando aplicável.\nSeja didático e direto. Máximo 350 palavras.`
         const content = await stackspotChatText(lessonPrompt)
 
-        await db.lesson.update({
+        const lessonUpdated = await db.lesson.updateMany({
           where: { id: lesson.id },
           data: { content, status: 'READY' },
         })
+        if (lessonUpdated.count === 0) return // curso/aula deletada — aborta
         await send('lesson_ready', { id: lesson.id, content })
       }
 
@@ -152,11 +154,11 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
         throw new Error('Quiz JSON inválido')
       }
 
-      await db.quiz.create({ data: { courseId: course.id, questions: questions as never } })
+      await db.quiz.create({ data: { courseId: course.id, questions: questions as never } }).catch(() => {})
       await send('quiz_ready', { courseId: course.id })
 
       // Finalizar
-      await db.course.update({ where: { id: course.id }, data: { status: 'READY' } })
+      await db.course.updateMany({ where: { id: course.id }, data: { status: 'READY' } })
       await send('course_ready', { courseId: course.id })
     } catch (err) {
       console.error('Generation error:', err)
