@@ -46,7 +46,7 @@ export default async function HomePage() {
                     level={c.level}
                     lessonCount={c._count.lessons}
                     user={c.user}
-                    createdAt={c.createdAt}
+                    createdAt={c.createdAt.toISOString()}
                   />
                 ))}
               </div>

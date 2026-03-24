@@ -70,7 +70,7 @@ export async function stackspotChat(prompt: string): Promise<ReadableStream<Uint
 function mockResponse(prompt: string): string {
   if (prompt.includes('outline')) {
     return JSON.stringify({
-      title: 'Curso Mock: ' + prompt.match(/"([^"]+)"/)?.[1] ?? 'Tópico',
+      title: 'Curso Mock: ' + (prompt.match(/"([^"]+)"/)?.[1] ?? 'Tópico'),
       description: 'Curso gerado em modo mock para testes.',
       lessons: [
         { title: 'Introdução', description: 'Conceitos básicos.' },

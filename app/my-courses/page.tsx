@@ -20,7 +20,7 @@ interface Course {
 }
 
 export default function MyCoursesPage() {
-  const { data: session, status } = useSession()
+  const { status } = useSession()
   const router = useRouter()
   const [courses, setCourses] = useState<Course[]>([])
   const [loading, setLoading] = useState(true)
@@ -78,7 +78,7 @@ export default function MyCoursesPage() {
                   {confirmId === course.id ? (
                     /* Confirmation row */
                     <div className="flex items-center gap-3 px-4 py-3">
-                      <p className="flex-1 text-sm text-text-primary">Excluir <span className="font-semibold">"{course.title}"</span>?</p>
+                      <p className="flex-1 text-sm text-text-primary">Excluir <span className="font-semibold">&ldquo;{course.title}&rdquo;</span>?</p>
                       <button
                         onClick={() => handleDelete(course.id)}
                         disabled={deleting === course.id}

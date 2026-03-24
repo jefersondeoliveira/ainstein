@@ -1,15 +1,13 @@
 'use client'
-import { useEffect, useRef } from 'react'
+import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import Link from 'next/link'
-import { Level } from '@prisma/client'
 import { Einstein } from '@/components/einstein/Einstein'
-import { LevelBadge } from '@/components/ui/LevelBadge'
 import { useGeneration } from '@/app/GenerationProvider'
 
 interface Lesson { id: string; title: string; order: number; status: string; content?: string }
-interface Course { id: string; title: string; topic: string; level: Level; status: string; lessons: Lesson[] }
+interface Course { id: string; title: string; topic: string; level: string; status: string; lessons: Lesson[] }
 
 const MESSAGES = [
   'Organizando os conceitos...',
@@ -23,8 +21,6 @@ export default function CoursePage({ params }: { params: { id: string } }) {
   const router = useRouter()
   const { status: sessionStatus } = useSession()
   const { generation, startTracking } = useGeneration()
-  const msgIndex = useRef(0)
-  const msgIntervalRef = useRef<NodeJS.Timeout | null>(null)
 
   const isThisCourse = generation?.courseId === params.id
 
