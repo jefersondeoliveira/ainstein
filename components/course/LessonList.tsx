@@ -38,7 +38,7 @@ export function LessonList({ courseId, lessons, completedLessons = [], currentOr
                 }`}>
                   {done ? '✓' : lesson.order}
                 </span>
-                <span className="truncate">{pending ? '...' : lesson.title}</span>
+                <span className="truncate">{lesson.title || '...'}{pending && <span className="ml-0.5 opacity-40 animate-pulse">·</span>}</span>
               </Link>
             </li>
           )

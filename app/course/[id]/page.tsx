@@ -144,13 +144,16 @@ export default function CoursePage({ params }: { params: { id: string } }) {
           <div className="flex flex-col gap-1.5 w-64">
             {lessons.map(l => (
               <div key={l.id} className="flex items-center gap-2">
-                <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
+                <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 transition-colors ${
                   l.status === 'READY' ? 'bg-accent' : 'bg-accent/30 animate-pulse'
                 }`} />
-                <span className={`text-xs truncate ${
+                <span className={`text-xs truncate transition-colors ${
                   l.status === 'READY' ? 'text-text-secondary' : 'text-text-muted'
                 }`}>
-                  {l.status === 'PENDING' ? 'Gerando...' : l.title}
+                  {l.title || 'Preparando...'}
+                  {l.status === 'PENDING' && (
+                    <span className="ml-1 opacity-40 animate-pulse">·</span>
+                  )}
                 </span>
               </div>
             ))}
